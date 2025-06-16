@@ -11,19 +11,25 @@ form.addEventListener("submit", async (e) => {
   input.value = "";
 
   try {
+    console.log("Verzend dit naar chatproxy:", message);
+
     const response = await fetch("https://chatproxy.azurewebsites.net/api/chatproxy", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message })
     });
 
-    // LET OP: geen .json() gebruiken, want backend stuurt platte tekst terug
     const text = await response.text();
-    appendMessage("Agent", text);
+    console.log("Ontvangen van proxy:", text);
 
+    if (!response.ok) {
+      throw new Error(`Serverfout: ${response.status}`);
+    }
+
+    appendMessage("Agent", text);
   } catch (err) {
-    appendMessage("Agent", "Er ging iets mis.");
-    console.error(err);
+    appendMessage("Agent", "Er ging iets mis bij het ophalen van het zorgdocument.");
+    console.error("Fout in fetch:", err);
   }
 });
 
@@ -33,4 +39,3 @@ function appendMessage(sender, text) {
   chat.appendChild(msg);
   chat.scrollTop = chat.scrollHeight;
 }
-
