@@ -17,15 +17,13 @@ form.addEventListener("submit", async (e) => {
       body: JSON.stringify({ message })
     });
 
-    if (!response.ok) {
-      throw new Error(`Serverfout (${response.status})`);
-    }
+    // LET OP: geen .json() gebruiken, want backend stuurt platte tekst terug
+    const text = await response.text();
+    appendMessage("Agent", text);
 
-    const result = await response.json();
-    appendMessage("Agent", result.tool_output || "Geen antwoord ontvangen.");
   } catch (err) {
     appendMessage("Agent", "Er ging iets mis.");
-    console.error("Fout in webchat:", err);
+    console.error(err);
   }
 });
 
@@ -35,3 +33,4 @@ function appendMessage(sender, text) {
   chat.appendChild(msg);
   chat.scrollTop = chat.scrollHeight;
 }
+
