@@ -1,23 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Indicatiehulp Webchat</title>
   <style>
-    body { font-family: sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; }
-    #chat { flex: 1; overflow-y: auto; padding: 1em; background: #f4f4f4; }
-    #input-form { display: flex; padding: 1em; background: #fff; }
-    input { flex: 1; padding: 0.5em; font-size: 1em; }
-    button { padding: 0.5em 1em; }
-    .user { font-weight: bold; margin-top: 1em; }
-    .agent { margin-left: 1em; color: #333; }
+    #chat { height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; }
+    .user, .agent { margin: 5px 0; }
+    .user { font-weight: bold; }
   </style>
 </head>
 <body>
+  <h2>Webchat Indicatiehulp</h2>
   <div id="chat"></div>
   <form id="input-form">
-    <input type="text" id="user-input" placeholder="Typ hier je vraag..." autocomplete="off" />
+    <input id="user-input" type="text" placeholder="Typ hier..." />
     <button type="submit">Verzend</button>
   </form>
   <script src="script.js"></script>
