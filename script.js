@@ -11,17 +11,21 @@ form.addEventListener("submit", async (e) => {
   input.value = "";
 
   try {
-    const response = await fetch("https://indicatiehulp-fn-py.azurewebsites.net/api/chatproxy", {
+    const response = await fetch("https://chatproxy.azurewebsites.net/api/chatproxy", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message })
     });
 
+    if (!response.ok) {
+      throw new Error(`Serverfout (${response.status})`);
+    }
+
     const result = await response.json();
     appendMessage("Agent", result.tool_output || "Geen antwoord ontvangen.");
   } catch (err) {
     appendMessage("Agent", "Er ging iets mis.");
-    console.error(err);
+    console.error("Fout in webchat:", err);
   }
 });
 
