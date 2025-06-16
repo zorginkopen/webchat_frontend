@@ -17,16 +17,16 @@ form.addEventListener("submit", async (e) => {
       body: JSON.stringify({ message })
     });
 
-    const text = await response.text();
-    console.log("Responsetekst:", text);
-
     if (!response.ok) {
       throw new Error(`Serverfout: ${response.status}`);
     }
 
-    appendMessage("Agent", text);
+    const data = await response.json();
+    const output = data.tool_output || "Geen antwoord ontvangen.";
+    appendMessage("Agent", output);
+
   } catch (err) {
-    appendMessage("Agent", "Er ging iets mis bij het ophalen van het zorgdocument.");
+    appendMessage("Agent", "Er ging iets mis.");
     console.error("Fout in fetch:", err);
   }
 });
@@ -37,3 +37,4 @@ function appendMessage(sender, text) {
   chat.appendChild(msg);
   chat.scrollTop = chat.scrollHeight;
 }
+
