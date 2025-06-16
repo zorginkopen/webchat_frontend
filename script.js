@@ -11,8 +11,6 @@ form.addEventListener("submit", async (e) => {
   input.value = "";
 
   try {
-    console.log("Verzend dit naar chatproxy:", message);
-
     const response = await fetch("https://chatproxy.azurewebsites.net/api/chatproxy", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -20,7 +18,7 @@ form.addEventListener("submit", async (e) => {
     });
 
     const text = await response.text();
-    console.log("Ontvangen van proxy:", text);
+    console.log("Responsetekst:", text);
 
     if (!response.ok) {
       throw new Error(`Serverfout: ${response.status}`);
