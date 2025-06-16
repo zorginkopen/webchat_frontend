@@ -18,16 +18,16 @@ form.addEventListener("submit", async (e) => {
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      appendMessage("Agent", `Fout: ${errorText}`);
       throw new Error(`Serverfout: ${response.status}`);
     }
 
     const data = await response.json();
-    const output = data.tool_output || "Geen antwoord ontvangen.";
-    appendMessage("Agent", output);
-
+    appendMessage("Agent", data.text);
   } catch (err) {
-    appendMessage("Agent", "Er ging iets mis.");
     console.error("Fout in fetch:", err);
+    appendMessage("Agent", "Er ging iets mis.");
   }
 });
 
@@ -37,4 +37,3 @@ function appendMessage(sender, text) {
   chat.appendChild(msg);
   chat.scrollTop = chat.scrollHeight;
 }
-
