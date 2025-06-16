@@ -19,15 +19,15 @@ form.addEventListener("submit", async (e) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      appendMessage("Agent", `Fout: ${errorText}`);
+      console.error("Responsetekst:", errorText);
       throw new Error(`Serverfout: ${response.status}`);
     }
 
-    const data = await response.json();
-    appendMessage("Agent", data.text);
+    const text = await response.text();
+    appendMessage("Agent", text);
   } catch (err) {
-    console.error("Fout in fetch:", err);
     appendMessage("Agent", "Er ging iets mis.");
+    console.error("Fout in fetch:", err);
   }
 });
 
