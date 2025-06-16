@@ -17,8 +17,8 @@ form.addEventListener("submit", async (e) => {
       body: JSON.stringify({ message })
     });
 
-    const text = await response.text();
-    appendMessage("Agent", text);
+    const result = await response.json();
+    appendMessage("Agent", result.tool_output || "Geen antwoord ontvangen.");
   } catch (err) {
     appendMessage("Agent", "Er ging iets mis.");
     console.error(err);
