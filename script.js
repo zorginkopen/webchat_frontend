@@ -6,17 +6,7 @@ let threadId = null;
 
 // Toon openingsbericht bij het laden van de pagina
 window.onload = () => {
-  const welkomstekst = `Welkom bij de AI Indicatiehulp! Ik ben jouw digitale adviseur voor het stellen van de juiste indicatie en het opstellen van een conceptadvies voor de zorgexpert (Kim Brand).
-
-Kies een optie om te starten:
-1. In kaart brengen cliëntsituatie
-2. Bekijk richtlijnen
-3. Contact opnemen met de zorgexpert
-
-Wil je direct een indicatieadvies laten opstellen? Dan heb ik meer informatie nodig over de cliënt. Geef bij voorkeur ook je naam en een e-mail of telefoonnummer, zodat we het conceptadvies voor beoordeling kunnen indienen.
-
-Met welke optie wil je verder?`;
-
+  const welkomstekst = `Welkom bij de AI Indicatiehulp! Ik ben jouw digitale adviseur voor het stellen van de juiste indicatie en het opstellen van een conceptadvies voor de zorgexpert (Kim Brand).\n\nKies een optie om te starten:\n1. In kaart brengen cliëntsituatie\n2. Bekijk richtlijnen\n3. Contact opnemen met de zorgexpert\n\nWil je direct een indicatieadvies laten opstellen? Dan heb ik meer informatie nodig over de cliënt. Geef bij voorkeur ook je naam en een e-mail of telefoonnummer, zodat we het conceptadvies voor beoordeling kunnen indienen.\n\nMet welke optie wil je verder?`;
   streamMessage("agent-message", welkomstekst);
 };
 
@@ -61,15 +51,15 @@ function appendMessage(cssClass, text) {
 function streamMessage(cssClass, text) {
   const msg = document.createElement("div");
   msg.classList.add("message", cssClass);
-  msg.innerHTML = ""; // Gebruik innerHTML voor opmaak
+  msg.innerHTML = "";
   chat.appendChild(msg);
 
-  const convertedText = text.replace(/\n/g, "<br>");
+  const chars = text.replace(/\n/g, "<br>").split("");
   let index = 0;
 
   const interval = setInterval(() => {
-    if (index < convertedText.length) {
-      msg.innerHTML += convertedText.charAt(index++);
+    if (index < chars.length) {
+      msg.innerHTML += chars[index++];
       chat.scrollTop = chat.scrollHeight;
     } else {
       clearInterval(interval);
