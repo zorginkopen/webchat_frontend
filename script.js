@@ -6,8 +6,23 @@ let threadId = null;
 
 // Toon openingsbericht bij het laden van de pagina
 window.onload = () => {
-  const welkomstekst = `Welkom bij de AI Indicatiehulp! Ik ben jouw digitale adviseur voor het stellen van de juiste indicatie en het opstellen van een conceptadvies voor de zorgexpert (Kim Brand).\n\nKies een optie om te starten:\n1. In kaart brengen cliëntsituatie\n2. Bekijk richtlijnen\n3. Contact opnemen met de zorgexpert\n\nWil je direct een indicatieadvies laten opstellen? Dan heb ik meer informatie nodig over de cliënt. Geef bij voorkeur ook je naam en een e-mail of telefoonnummer, zodat we het conceptadvies voor beoordeling kunnen indienen.\n\nMet welke optie wil je verder?`;
-  streamMessage("agent-message", welkomstekst);
+  const welkomstHTML = `
+    Welkom bij de <strong>AI Indicatiehulp</strong>!<br>
+    Ik ben jouw digitale adviseur voor:<br>
+    het stellen van de juiste indicatie en het opstellen van een conceptadvies voor de zorgexpert (Kim Brand).<br><br>
+
+    <strong>Kies een optie om te starten:</strong><br>
+    1. In kaart brengen cliëntsituatie<br>
+    2. Bekijk richtlijnen<br>
+    3. Contact opnemen met de zorgexpert<br><br>
+
+    Wil je direct een indicatieadvies laten opstellen? Dan heb ik meer informatie nodig over de cliënt.<br>
+    Geef bij voorkeur ook je naam en een e-mailadres of telefoonnummer,<br>
+    zodat we het conceptadvies voor beoordeling kunnen indienen.<br><br>
+
+    <em>Met welke optie wil je verder?</em>
+  `;
+  appendFormattedMessage("agent-message", welkomstHTML);
 };
 
 form.addEventListener("submit", async (e) => {
@@ -48,6 +63,14 @@ function appendMessage(cssClass, text) {
   chat.scrollTop = chat.scrollHeight;
 }
 
+function appendFormattedMessage(cssClass, htmlContent) {
+  const msg = document.createElement("div");
+  msg.classList.add("message", cssClass);
+  msg.innerHTML = htmlContent;
+  chat.appendChild(msg);
+  chat.scrollTop = chat.scrollHeight;
+}
+
 function streamMessage(cssClass, text) {
   const msg = document.createElement("div");
   msg.classList.add("message", cssClass);
@@ -61,5 +84,5 @@ function streamMessage(cssClass, text) {
     } else {
       clearInterval(interval);
     }
-  }, 15); // pas aan voor snellere/langzamere weergave
+  }, 15);
 }
