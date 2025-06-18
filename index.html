@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Webchat met GPT Agent</title>
+  <title>Indicatiehulp.ai</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -33,22 +33,25 @@
 
     .message {
       margin-bottom: 12px;
-      padding: 8px 12px;
-      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
       max-width: 75%;
-      word-wrap: break-word;
     }
 
     .user-message {
-      background-color: #e0f7fa;
       align-self: flex-end;
       text-align: right;
+      background-color: #e0f7fa;
+      border-radius: 12px 12px 0 12px;
+      padding: 10px 14px;
     }
 
     .agent-message {
-      background-color: #f1f1f1;
       align-self: flex-start;
       text-align: left;
+      background-color: #f1f1f1;
+      border-radius: 12px 12px 12px 0;
+      padding: 10px 14px;
     }
 
     #input-form {
@@ -78,7 +81,8 @@
     }
 
     button:hover {
-      background-color: #e6b800;
+      background-color: #125aa3;
+      color: white;
     }
   </style>
 </head>
