@@ -2,22 +2,21 @@ const chat = document.getElementById("chat");
 const form = document.getElementById("input-form");
 const input = document.getElementById("user-input");
 
-const messageHistory = [];
+let threadId = null; // Slaat de thread_id lokaal op
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const message = input.value.trim();
   if (!message) return;
 
-  appendMessage("user", message);
-  messageHistory.push({ role: "user", content: message });
+  appendMessage("Gebruiker", message);
   input.value = "";
 
   try {
     const response = await fetch("https://chatproxy.azurewebsites.net/api/chatproxy", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages: messageHistory })
+      body: JSON.stringify({ message, thread_id: threadId })
     });
 
     if (!response.ok) {
@@ -26,20 +25,19 @@ form.addEventListener("submit", async (e) => {
       throw new Error(`Serverfout: ${response.status}`);
     }
 
-    const text = await response.text();
-    appendMessage("assistant", text);
-    messageHistory.push({ role: "assistant", content: text });
-
+    const data = await response.json();
+    appendMessage("Agent", data.reply);
+    threadId = data.thread_id; // Bewaar thread_id voor vervolgvragen
   } catch (err) {
-    appendMessage("assistant", "Er ging iets mis.");
+    appendMessage("Agent", "Er ging iets mis.");
     console.error("Fout in fetch:", err);
   }
 });
 
-function appendMessage(role, text) {
+function appendMessage(sender, text) {
   const msg = document.createElement("div");
-  msg.className = "message " + (role === "user" ? "user-message" : "agent-message");
-  msg.textContent = text;
+  msg.classList.add("message", sender === "Gebruiker" ? "user-message" : "agent-message");
+  msg.innerHTML = `<div><strong>${sender}:</strong> ${text}</div>`;
   chat.appendChild(msg);
   chat.scrollTop = chat.scrollHeight;
 }
