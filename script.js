@@ -4,10 +4,25 @@ const input = document.getElementById("user-input");
 
 let threadId = null;
 
-// Toon openingsbericht bij het laden van de pagina
+// Openingsbericht bij het laden van de pagina
 window.onload = () => {
-  const welkomstekst = `Welkom bij de AI Indicatiehulp! Ik ben jouw digitale adviseur voor het stellen van de juiste indicatie en het opstellen van een conceptadvies voor de zorgexpert (Kim Brand).\n\nKies een optie om te starten:\n1. In kaart brengen cliëntsituatie\n2. Bekijk richtlijnen\n3. Contact opnemen met de zorgexpert\n\nWil je direct een indicatieadvies laten opstellen? Dan heb ik meer informatie nodig over de cliënt. Geef bij voorkeur ook je naam en een e-mail of telefoonnummer, zodat we het conceptadvies voor beoordeling kunnen indienen.\n\nMet welke optie wil je verder?`;
-  streamMessage("agent-message", welkomstekst);
+  const welkomstHTML = `
+    Welkom bij de <strong>AI Indicatiehulp</strong>!<br>
+    Ik ben jouw digitale adviseur voor:<br>
+    het stellen van de juiste indicatie en het opstellen van een conceptadvies voor de zorgexpert (Kim Brand).<br><br>
+
+    <strong>Kies een optie om te starten:</strong><br>
+    1. In kaart brengen cliëntsituatie<br>
+    2. Bekijk richtlijnen<br>
+    3. Contact opnemen met de zorgexpert<br><br>
+
+    Wil je direct een indicatieadvies laten opstellen? Dan heb ik meer informatie nodig over de cliënt.<br>
+    Geef bij voorkeur ook je naam en een e-mailadres of telefoonnummer,<br>
+    zodat we het conceptadvies voor beoordeling kunnen indienen.<br><br>
+
+    <em>Met welke optie wil je verder?</em>
+  `;
+  appendFormattedMessage("agent-message", welkomstHTML);
 };
 
 form.addEventListener("submit", async (e) => {
@@ -43,7 +58,15 @@ form.addEventListener("submit", async (e) => {
 function appendMessage(cssClass, text) {
   const msg = document.createElement("div");
   msg.classList.add("message", cssClass);
-  msg.innerHTML = text.replace(/\n/g, "<br>");
+  msg.textContent = text;
+  chat.appendChild(msg);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function appendFormattedMessage(cssClass, htmlContent) {
+  const msg = document.createElement("div");
+  msg.classList.add("message", cssClass);
+  msg.innerHTML = htmlContent;
   chat.appendChild(msg);
   chat.scrollTop = chat.scrollHeight;
 }
@@ -51,15 +74,27 @@ function appendMessage(cssClass, text) {
 function streamMessage(cssClass, text) {
   const msg = document.createElement("div");
   msg.classList.add("message", cssClass);
-  msg.innerHTML = "";
   chat.appendChild(msg);
 
-  const chars = text.replace(/\n/g, "<br>").split("");
-  let index = 0;
+  const lines = text.split("\n");
+  const isNumberedList = lines.every(line => /^\d+\.\s+/.test(line.trim())) && lines.length > 1;
 
+  if (isNumberedList) {
+    const ol = document.createElement("ol");
+    lines.forEach(line => {
+      const li = document.createElement("li");
+      li.textContent = line.replace(/^\d+\.\s+/, "").trim();
+      ol.appendChild(li);
+    });
+    msg.appendChild(ol);
+    chat.scrollTop = chat.scrollHeight;
+    return;
+  }
+
+  let index = 0;
   const interval = setInterval(() => {
-    if (index < chars.length) {
-      msg.innerHTML += chars[index++];
+    if (index < text.length) {
+      msg.textContent += text.charAt(index++);
       chat.scrollTop = chat.scrollHeight;
     } else {
       clearInterval(interval);
