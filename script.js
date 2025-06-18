@@ -7,7 +7,7 @@ form.addEventListener("submit", async (e) => {
   const message = input.value.trim();
   if (!message) return;
 
-  appendMessage("Gebruiker", message);
+  appendMessage("user", message);
   input.value = "";
 
   try {
@@ -23,18 +23,34 @@ form.addEventListener("submit", async (e) => {
       throw new Error(`Serverfout: ${response.status}`);
     }
 
-    const text = await response.text();
-    appendMessage("Agent", text);
+    const fullText = await response.text();
+    simulateTyping("assistant", fullText);
   } catch (err) {
-    appendMessage("Agent", "Er ging iets mis.");
+    appendMessage("assistant", "Er ging iets mis.");
     console.error("Fout in fetch:", err);
   }
 });
 
-function appendMessage(sender, text) {
+function appendMessage(role, text) {
   const msg = document.createElement("div");
-  msg.className = "message " + (sender === "Gebruiker" ? "user-message" : "agent-message");
-  msg.textContent = text;
+  msg.classList.add("message");
+  msg.classList.add(role === "user" ? "user-message" : "agent-message");
+  msg.innerText = `${text}`;
   chat.appendChild(msg);
   chat.scrollTop = chat.scrollHeight;
+}
+
+function simulateTyping(role, fullText) {
+  const msg = document.createElement("div");
+  msg.classList.add("message");
+  msg.classList.add(role === "user" ? "user-message" : "agent-message");
+  chat.appendChild(msg);
+
+  let index = 0;
+  const interval = setInterval(() => {
+    msg.innerText = fullText.slice(0, index);
+    chat.scrollTop = chat.scrollHeight;
+    index++;
+    if (index > fullText.length) clearInterval(interval);
+  }, 20); // snelheid: 20ms per karakter
 }
