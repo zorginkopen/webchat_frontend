@@ -6,23 +6,18 @@ let threadId = null;
 
 // Toon openingsbericht bij het laden van de pagina
 window.onload = () => {
-  const welkomstHTML = `
-    Welkom bij de <strong>AI Indicatiehulp</strong>!<br>
-    Ik ben jouw digitale adviseur voor:<br>
-    het stellen van de juiste indicatie en het opstellen van een conceptadvies voor de zorgexpert (Kim Brand).<br><br>
+  const welkomstekst = `Welkom bij de AI Indicatiehulp! Ik ben jouw digitale adviseur voor het stellen van de juiste indicatie en het opstellen van een conceptadvies voor de zorgexpert (Kim Brand).
 
-    <strong>Kies een optie om te starten:</strong><br>
-    1. In kaart brengen cliëntsituatie<br>
-    2. Bekijk richtlijnen<br>
-    3. Contact opnemen met de zorgexpert<br><br>
+Kies een optie om te starten:
+1. In kaart brengen cliëntsituatie
+2. Bekijk richtlijnen
+3. Contact opnemen met de zorgexpert
 
-    Wil je direct een indicatieadvies laten opstellen? Dan heb ik meer informatie nodig over de cliënt.<br>
-    Geef bij voorkeur ook je naam en een e-mailadres of telefoonnummer,<br>
-    zodat we het conceptadvies voor beoordeling kunnen indienen.<br><br>
+Wil je direct een indicatieadvies laten opstellen? Dan heb ik meer informatie nodig over de cliënt. Geef bij voorkeur ook je naam en een e-mail of telefoonnummer, zodat we het conceptadvies voor beoordeling kunnen indienen.
 
-    <em>Met welke optie wil je verder?</em>
-  `;
-  appendFormattedMessage("agent-message", welkomstHTML);
+Met welke optie wil je verder?`;
+
+  streamMessage("agent-message", welkomstekst);
 };
 
 form.addEventListener("submit", async (e) => {
@@ -58,15 +53,7 @@ form.addEventListener("submit", async (e) => {
 function appendMessage(cssClass, text) {
   const msg = document.createElement("div");
   msg.classList.add("message", cssClass);
-  msg.textContent = text;
-  chat.appendChild(msg);
-  chat.scrollTop = chat.scrollHeight;
-}
-
-function appendFormattedMessage(cssClass, htmlContent) {
-  const msg = document.createElement("div");
-  msg.classList.add("message", cssClass);
-  msg.innerHTML = htmlContent;
+  msg.innerHTML = text.replace(/\n/g, "<br>");
   chat.appendChild(msg);
   chat.scrollTop = chat.scrollHeight;
 }
@@ -74,12 +61,15 @@ function appendFormattedMessage(cssClass, htmlContent) {
 function streamMessage(cssClass, text) {
   const msg = document.createElement("div");
   msg.classList.add("message", cssClass);
+  msg.innerHTML = ""; // Gebruik innerHTML voor opmaak
   chat.appendChild(msg);
 
+  const convertedText = text.replace(/\n/g, "<br>");
   let index = 0;
+
   const interval = setInterval(() => {
-    if (index < text.length) {
-      msg.textContent += text.charAt(index++);
+    if (index < convertedText.length) {
+      msg.innerHTML += convertedText.charAt(index++);
       chat.scrollTop = chat.scrollHeight;
     } else {
       clearInterval(interval);
