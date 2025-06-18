@@ -76,28 +76,36 @@ function streamMessage(cssClass, text) {
   msg.classList.add("message", cssClass);
   chat.appendChild(msg);
 
-  const lines = text.split("\n");
-  const isNumberedList = lines.every(line => /^\d+\.\s+/.test(line.trim())) && lines.length > 1;
+  const lines = text.split("\n").filter(line => line.trim() !== "");
 
-  if (isNumberedList) {
-    const ol = document.createElement("ol");
-    lines.forEach(line => {
-      const li = document.createElement("li");
-      li.textContent = line.replace(/^\d+\.\s+/, "").trim();
-      ol.appendChild(li);
-    });
-    msg.appendChild(ol);
-    chat.scrollTop = chat.scrollHeight;
-    return;
+  const isNumberedList = lines.length > 1 && lines.every(line => /^\d+\.\s+/.test(line.trim()));
+  const isBulletedList = lines.length > 1 && lines.every(line => /^[-*•]\s+/.test(line.trim()));
+
+  if (isNumberedList || isBulletedList) {
+    const listElement = document.createElement(isNumberedList ? "ol" : "ul");
+    msg.appendChild(listElement);
+    let i = 0;
+
+    const interval = setInterval(() => {
+      if (i < lines.length) {
+        const li = document.createElement("li");
+        li.textContent = lines[i].replace(/^(\d+\.\s+|[-*•]\s+)/, "").trim();
+        listElement.appendChild(li);
+        chat.scrollTop = chat.scrollHeight;
+        i++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 200);
+  } else {
+    let index = 0;
+    const interval = setInterval(() => {
+      if (index < text.length) {
+        msg.textContent += text.charAt(index++);
+        chat.scrollTop = chat.scrollHeight;
+      } else {
+        clearInterval(interval);
+      }
+    }, 15);
   }
-
-  let index = 0;
-  const interval = setInterval(() => {
-    if (index < text.length) {
-      msg.textContent += text.charAt(index++);
-      chat.scrollTop = chat.scrollHeight;
-    } else {
-      clearInterval(interval);
-    }
-  }, 15);
 }
