@@ -1,48 +1,39 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const form = document.getElementById("chat-form");
-  const input = document.getElementById("user-input");
-  const chatBox = document.getElementById("chat-box");
+const chat = document.getElementById("chat");
+const form = document.getElementById("input-form");
+const input = document.getElementById("user-input");
 
-  form.addEventListener("submit", async function (e) {
-    e.preventDefault();
-    const userMessage = input.value.trim();
-    if (!userMessage) return;
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const message = input.value.trim();
+  if (!message) return;
 
-    appendMessage("user", userMessage);
-    input.value = "";
+  appendMessage("Gebruiker", message);
+  input.value = "";
 
-    try {
-      const response = await fetch("https://chatproxy.azurewebsites.net/api/chatproxy", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMessage })
-      });
+  try {
+    const response = await fetch("https://chatproxy.azurewebsites.net/api/chatproxy", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message })
+    });
 
-      const text = await response.text();
-
-      if (!response.ok) {
-        console.error("Foutstatus:", response.status, text);
-        appendMessage("assistant", `⚠️ Serverfout (${response.status}): ${text}`);
-        return;
-      }
-
-      if (!text || text.trim() === "") {
-        appendMessage("assistant", "⚠️ Geen antwoord ontvangen van de chatbot.");
-        return;
-      }
-
-      appendMessage("assistant", text);
-    } catch (error) {
-      console.error("Fout in fetch:", error);
-      appendMessage("assistant", "⚠️ Verbindingsfout of onbekende fout.");
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Responsetekst:", errorText);
+      throw new Error(`Serverfout: ${response.status}`);
     }
-  });
 
-  function appendMessage(role, text) {
-    const messageElem = document.createElement("div");
-    messageElem.className = role === "user" ? "user-message" : "assistant-message";
-    messageElem.innerText = text;
-    chatBox.appendChild(messageElem);
-    chatBox.scrollTop = chatBox.scrollHeight;
+    const text = await response.text();
+    appendMessage("Agent", text);
+  } catch (err) {
+    appendMessage("Agent", "Er ging iets mis.");
+    console.error("Fout in fetch:", err);
   }
 });
+
+function appendMessage(sender, text) {
+  const msg = document.createElement("div");
+  msg.innerHTML = `<div class="user">${sender}:</div><div class="agent">${text}</div>`;
+  chat.appendChild(msg);
+  chat.scrollTop = chat.scrollHeight;
+}
