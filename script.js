@@ -33,7 +33,8 @@ form.addEventListener("submit", async (e) => {
 
 function appendMessage(sender, text) {
   const msg = document.createElement("div");
-  msg.innerHTML = `<div class="user">${sender}:</div><div class="agent">${text}</div>`;
+  msg.className = "message " + (sender === "Gebruiker" ? "user-message" : "agent-message");
+  msg.textContent = text;
   chat.appendChild(msg);
   chat.scrollTop = chat.scrollHeight;
 }
