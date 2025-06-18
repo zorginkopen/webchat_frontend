@@ -1,40 +1,39 @@
-const form = document.querySelector('form');
-const input = document.querySelector('#message');
-const chatbox = document.querySelector('#chatbox');
+const chat = document.getElementById("chat");
+const form = document.getElementById("input-form");
+const input = document.getElementById("user-input");
 
-let thread_id = null;
-
-form.addEventListener('submit', async (e) => {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const message = input.value.trim();
   if (!message) return;
 
-  appendMessage('user', message);
-  input.value = '';
+  appendMessage("Gebruiker", message);
+  input.value = "";
 
   try {
-    const response = await fetch('https://chatproxy.azurewebsites.net/api/chatproxy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message, thread_id })
+    const response = await fetch("https://chatproxy.azurewebsites.net/api/chatproxy", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message })
     });
 
-    const data = await response.json();
-    if (response.ok) {
-      thread_id = data.thread_id;
-      appendMessage('assistant', data.response);
-    } else {
-      appendMessage('system', 'Fout: ' + data.error);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Responsetekst:", errorText);
+      throw new Error(`Serverfout: ${response.status}`);
     }
+
+    const text = await response.text();
+    appendMessage("Agent", text);
   } catch (err) {
-    appendMessage('system', 'Verbinding mislukt: ' + err.message);
+    appendMessage("Agent", "Er ging iets mis.");
+    console.error("Fout in fetch:", err);
   }
 });
 
-function appendMessage(role, content) {
-  const div = document.createElement('div');
-  div.className = role;
-  div.textContent = `${role}: ${content}`;
-  chatbox.appendChild(div);
-  chatbox.scrollTop = chatbox.scrollHeight;
+function appendMessage(sender, text) {
+  const msg = document.createElement("div");
+  msg.innerHTML = `<div class="user">${sender}:</div><div class="agent">${text}</div>`;
+  chat.appendChild(msg);
+  chat.scrollTop = chat.scrollHeight;
 }
