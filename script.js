@@ -1,56 +1,42 @@
-const form = document.getElementById("chat-form");
-const textarea = document.getElementById("message");
-const chatContainer = document.getElementById("chat-container");
-const statusDiv = document.getElementById("status");
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById("chat-form");
+  const input = document.getElementById("user-input");
+  const chatBox = document.getElementById("chat-box");
 
-form.addEventListener("submit", async function (e) {
-  e.preventDefault();
-  await submitForm();
-});
-
-textarea.addEventListener("keydown", function (e) {
-  if (e.key === "Enter" && !e.shiftKey) {
+  form.addEventListener("submit", async function (e) {
     e.preventDefault();
-    submitForm();
+    const userMessage = input.value.trim();
+    if (!userMessage) return;
+
+    appendMessage("user", userMessage);
+    input.value = "";
+
+    try {
+      const response = await fetch("https://chatproxy.azurewebsites.net/api/chatproxy", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message: userMessage })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Serverfout: ${response.status}`);
+      }
+
+      const text = await response.text();
+      appendMessage("assistant", text);
+    } catch (error) {
+      console.error("Fout in fetch:", error);
+      appendMessage("assistant", "⚠️ Er ging iets mis bij het ophalen van het antwoord.");
+    }
+  });
+
+  function appendMessage(role, text) {
+    const messageElem = document.createElement("div");
+    messageElem.className = role === "user" ? "user-message" : "assistant-message";
+    messageElem.innerText = text;
+    chatBox.appendChild(messageElem);
+    chatBox.scrollTop = chatBox.scrollHeight;
   }
 });
-
-async function submitForm() {
-  const message = textarea.value.trim();
-  if (!message) return;
-
-  appendMessage("user", message);
-  textarea.value = "";
-
-  statusDiv.textContent = "AI is aan het typen...";
-
-  try {
-    const response = await fetch("https://chatproxy.azurewebsites.net/api/chatproxy", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ message: message })
-    });
-
-    const data = await response.text();
-
-    if (!response.ok) {
-      throw new Error(`Serverfout: ${data}`);
-    }
-
-    appendMessage("assistant", data);
-  } catch (error) {
-    appendMessage("assistant", `Fout: ${error.message}`);
-  } finally {
-    statusDiv.textContent = "";
-  }
-}
-
-function appendMessage(role, text) {
-  const messageDiv = document.createElement("div");
-  messageDiv.className = role;
-  messageDiv.textContent = text;
-  chatContainer.appendChild(messageDiv);
-  chatContainer.scrollTop = chatContainer.scrollHeight;
-}
