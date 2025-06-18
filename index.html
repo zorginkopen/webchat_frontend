@@ -9,7 +9,7 @@
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #f4f4f4;
+      background-color: #f2f2f2;
       display: flex;
       flex-direction: column;
       height: 100vh;
@@ -19,8 +19,9 @@
       text-align: center;
       background-color: #ffc827;
       color: black;
-      padding: 12px 0;
+      padding: 12px;
       margin: 0;
+      font-size: 22px;
     }
 
     #chat {
@@ -29,36 +30,35 @@
       padding: 16px;
       display: flex;
       flex-direction: column;
+      gap: 12px;
     }
 
     .message {
-      margin-bottom: 12px;
-      display: flex;
-      flex-direction: column;
-      max-width: 75%;
+      padding: 10px 14px;
+      border-radius: 18px;
+      max-width: 70%;
+      word-wrap: break-word;
+      font-size: 16px;
+      line-height: 1.4;
     }
 
     .user-message {
+      background-color: #d0f0fd;
       align-self: flex-end;
-      text-align: right;
-      background-color: #e0f7fa;
-      border-radius: 12px 12px 0 12px;
-      padding: 10px 14px;
+      border-bottom-right-radius: 4px;
     }
 
     .agent-message {
+      background-color: #ffffff;
       align-self: flex-start;
-      text-align: left;
-      background-color: #f1f1f1;
-      border-radius: 12px 12px 12px 0;
-      padding: 10px 14px;
+      border-bottom-left-radius: 4px;
     }
 
     #input-form {
       display: flex;
-      border-top: 1px solid #ccc;
       padding: 10px;
       background: white;
+      border-top: 1px solid #ccc;
     }
 
     #user-input {
