@@ -10,42 +10,44 @@ form.addEventListener("submit", async (e) => {
   appendMessage("user", message);
   input.value = "";
 
-  const messageContainer = appendMessage("assistant", ""); // placeholder voor stream
-
+  const agentMsg = appendMessage("assistant", "..."); // tijdelijk placeholder
   try {
     const response = await fetch("https://chatproxy.azurewebsites.net/api/chatproxy", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({ message })
     });
 
     if (!response.ok || !response.body) {
-      const errorText = await response.text();
-      console.error("Responsetekst:", errorText);
-      throw new Error(`Serverfout: ${response.status}`);
+      agentMsg.textContent = "Er ging iets mis met het ophalen van het antwoord.";
+      return;
     }
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder("utf-8");
-    let result = "";
+    let done = false;
+    let finalText = "";
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      result += decoder.decode(value, { stream: true });
-      messageContainer.innerHTML = result;
-      chat.scrollTop = chat.scrollHeight;
+    while (!done) {
+      const { value, done: readerDone } = await reader.read();
+      done = readerDone;
+      if (value) {
+        const chunk = decoder.decode(value, { stream: true });
+        finalText += chunk;
+        agentMsg.textContent = finalText;
+        chat.scrollTop = chat.scrollHeight;
+      }
     }
   } catch (err) {
-    messageContainer.innerHTML = "Er ging iets mis.";
+    agentMsg.textContent = "Er ging iets mis.";
     console.error("Fout in fetch:", err);
   }
 });
 
-function appendMessage(role, text) {
+function appendMessage(sender, text) {
   const msg = document.createElement("div");
-  msg.className = "message " + (role === "user" ? "user-message" : "agent-message");
-  msg.innerHTML = text;
+  msg.className = `message ${sender}-message`;
+  msg.textContent = text;
   chat.appendChild(msg);
   chat.scrollTop = chat.scrollHeight;
   return msg;
