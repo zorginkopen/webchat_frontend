@@ -2,14 +2,20 @@ const chat = document.getElementById("chat");
 const form = document.getElementById("input-form");
 const input = document.getElementById("user-input");
 
-let threadId = null; // Slaat de thread_id lokaal op
+let threadId = null;
+
+// Toon openingsbericht bij het laden van de pagina
+window.onload = () => {
+  const welkomstekst = `Welkom bij de AI Indicatiehulp! Ik ben jouw digitale adviseur voor het stellen van de juiste indicatie en het opstellen van een conceptadvies voor de zorgexpert (Kim Brand).\n\nKies een optie om te starten:\n1. In kaart brengen cliëntsituatie\n2. Bekijk richtlijnen\n3. Contact opnemen met de zorgexpert\n\nWil je direct een indicatieadvies laten opstellen? Dan heb ik meer informatie nodig over de cliënt. Geef bij voorkeur ook je naam en een e-mail of telefoonnummer, zodat we het conceptadvies voor beoordeling kunnen indienen.\n\nMet welke optie wil je verder?`;
+  streamMessage("agent-message", welkomstekst);
+};
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const message = input.value.trim();
   if (!message) return;
 
-  appendMessage("user", message);
+  appendMessage("user-message", message);
   input.value = "";
 
   try {
@@ -26,41 +32,34 @@ form.addEventListener("submit", async (e) => {
     }
 
     const data = await response.json();
-    const agentMsg = appendMessage("agent", "");
-    simulateStreamingText(data.reply,
-      (partial) => {
-        agentMsg.textContent = partial;
-      },
-      () => {
-        console.log("Volledig antwoord weergegeven");
-      }
-    );
-    threadId = data.thread_id; // Bewaar thread_id voor vervolgvragen
+    threadId = data.thread_id;
+    streamMessage("agent-message", data.reply);
   } catch (err) {
-    appendMessage("agent", "Er ging iets mis.");
+    streamMessage("agent-message", "Er ging iets mis.");
     console.error("Fout in fetch:", err);
   }
 });
 
-function appendMessage(sender, text) {
+function appendMessage(cssClass, text) {
   const msg = document.createElement("div");
-  msg.classList.add("message", sender === "user" ? "user-message" : "agent-message");
+  msg.classList.add("message", cssClass);
   msg.textContent = text;
   chat.appendChild(msg);
   chat.scrollTop = chat.scrollHeight;
-  return msg;
 }
 
-function simulateStreamingText(fullText, updateCallback, doneCallback) {
+function streamMessage(cssClass, text) {
+  const msg = document.createElement("div");
+  msg.classList.add("message", cssClass);
+  chat.appendChild(msg);
+
   let index = 0;
   const interval = setInterval(() => {
-    if (index < fullText.length) {
-      updateCallback(fullText.slice(0, index + 1));
-      index++;
+    if (index < text.length) {
+      msg.textContent += text.charAt(index++);
+      chat.scrollTop = chat.scrollHeight;
     } else {
       clearInterval(interval);
-      doneCallback();
     }
-  }, 20);
+  }, 15); // pas aan voor snellere/langzamere weergave
 }
-
