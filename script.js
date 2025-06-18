@@ -9,7 +9,7 @@ form.addEventListener("submit", async (e) => {
   const message = input.value.trim();
   if (!message) return;
 
-  appendMessage("Gebruiker", message);
+  appendMessage("user", message); // Styling aangepast
   input.value = "";
 
   try {
@@ -26,18 +26,18 @@ form.addEventListener("submit", async (e) => {
     }
 
     const data = await response.json();
-    appendMessage("Agent", data.reply);
+    appendMessage("agent", data.reply); // Styling aangepast
     threadId = data.thread_id; // Bewaar thread_id voor vervolgvragen
   } catch (err) {
-    appendMessage("Agent", "Er ging iets mis.");
+    appendMessage("agent", "Er ging iets mis.");
     console.error("Fout in fetch:", err);
   }
 });
 
-function appendMessage(sender, text) {
+function appendMessage(role, text) {
   const msg = document.createElement("div");
-  msg.classList.add("message", sender === "Gebruiker" ? "user-message" : "agent-message");
-  msg.innerHTML = `<div><strong>${sender}:</strong> ${text}</div>`;
+  msg.classList.add("message", role === "user" ? "user-message" : "agent-message");
+  msg.innerHTML = `<div class="bubble"><strong>${role === "user" ? "Gebruiker" : "Agent"}:</strong><br>${text}</div>`;
   chat.appendChild(msg);
   chat.scrollTop = chat.scrollHeight;
 }
