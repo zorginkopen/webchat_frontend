@@ -14,21 +14,27 @@ document.addEventListener("DOMContentLoaded", function () {
     try {
       const response = await fetch("https://chatproxy.azurewebsites.net/api/chatproxy", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMessage })
       });
 
+      const text = await response.text();
+
       if (!response.ok) {
-        throw new Error(`Serverfout: ${response.status}`);
+        console.error("Foutstatus:", response.status, text);
+        appendMessage("assistant", `⚠️ Serverfout (${response.status}): ${text}`);
+        return;
       }
 
-      const text = await response.text();
+      if (!text || text.trim() === "") {
+        appendMessage("assistant", "⚠️ Geen antwoord ontvangen van de chatbot.");
+        return;
+      }
+
       appendMessage("assistant", text);
     } catch (error) {
       console.error("Fout in fetch:", error);
-      appendMessage("assistant", "⚠️ Er ging iets mis bij het ophalen van het antwoord.");
+      appendMessage("assistant", "⚠️ Verbindingsfout of onbekende fout.");
     }
   });
 
