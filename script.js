@@ -1,39 +1,42 @@
-const chat = document.getElementById("chat");
-const form = document.getElementById("input-form");
-const input = document.getElementById("user-input");
+// script.js - Werkende basisversie met minimale aanpassingen voor UX
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const message = input.value.trim();
-  if (!message) return;
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById("chat-form");
+  const input = document.getElementById("user-input");
+  const chatBox = document.getElementById("chat-box");
 
-  appendMessage("Gebruiker", message);
-  input.value = "";
-
-  try {
-    const response = await fetch("https://chatproxy.azurewebsites.net/api/chatproxy", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message })
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Responsetekst:", errorText);
-      throw new Error(`Serverfout: ${response.status}`);
-    }
-
-    const text = await response.text();
-    appendMessage("Agent", text);
-  } catch (err) {
-    appendMessage("Agent", "Er ging iets mis.");
-    console.error("Fout in fetch:", err);
+  function appendMessage(sender, text) {
+    const messageElem = document.createElement("div");
+    messageElem.className = sender === "user" ? "user-message" : "bot-message";
+    messageElem.textContent = text;
+    chatBox.appendChild(messageElem);
+    chatBox.scrollTop = chatBox.scrollHeight;
   }
-});
 
-function appendMessage(sender, text) {
-  const msg = document.createElement("div");
-  msg.innerHTML = `<div class="user">${sender}:</div><div class="agent">${text}</div>`;
-  chat.appendChild(msg);
-  chat.scrollTop = chat.scrollHeight;
-}
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+    const userInput = input.value.trim();
+    if (!userInput) return;
+
+    appendMessage("user", userInput);
+    input.value = "";
+
+    try {
+      const response = await fetch("https://chatproxy.azurewebsites.net/api/chatproxy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userInput })
+      });
+
+      const result = await response.text();
+
+      if (!response.ok) {
+        appendMessage("bot", "(Fout): " + result);
+      } else {
+        appendMessage("bot", result);
+      }
+    } catch (error) {
+      appendMessage("bot", "(Fout bij ophalen): " + error.message);
+    }
+  });
+});
