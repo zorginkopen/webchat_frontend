@@ -4,7 +4,7 @@ const input = document.getElementById("user-input");
 
 let threadId = null;
 
-// Openingsbericht bij laden van de pagina
+// Openingsbericht bij het laden van de pagina
 window.onload = () => {
   const welkomstHTML = `
     Welkom bij de <strong>AI Indicatiehulp</strong>!<br>
@@ -76,33 +76,21 @@ function streamMessage(cssClass, text) {
   msg.classList.add("message", cssClass);
   chat.appendChild(msg);
 
-  const numberedItems = text.match(/(\d+\.\s[^(\d+\.)]+)/g);
-  const bulletedItems = text.match(/([*-•]\s[^*-•]+)/g);
+  const lines = text.split("\n").filter(line => line.trim() !== "");
 
-  if (numberedItems && numberedItems.length >= 2) {
-    const ol = document.createElement("ol");
-    msg.appendChild(ol);
+  const isNumberedList = lines.length > 1 && lines.every(line => /^\d+\.\s+/.test(line.trim()));
+  const isBulletedList = lines.length > 1 && lines.every(line => /^[-*•]\s+/.test(line.trim()));
+
+  if (isNumberedList || isBulletedList) {
+    const listElement = document.createElement(isNumberedList ? "ol" : "ul");
+    msg.appendChild(listElement);
     let i = 0;
+
     const interval = setInterval(() => {
-      if (i < numberedItems.length) {
+      if (i < lines.length) {
         const li = document.createElement("li");
-        li.textContent = numberedItems[i].trim();
-        ol.appendChild(li);
-        chat.scrollTop = chat.scrollHeight;
-        i++;
-      } else {
-        clearInterval(interval);
-      }
-    }, 200);
-  } else if (bulletedItems && bulletedItems.length >= 2) {
-    const ul = document.createElement("ul");
-    msg.appendChild(ul);
-    let i = 0;
-    const interval = setInterval(() => {
-      if (i < bulletedItems.length) {
-        const li = document.createElement("li");
-        li.textContent = bulletedItems[i].trim();
-        ul.appendChild(li);
+        li.textContent = lines[i].replace(/^(\d+\.\s+|[-*•]\s+)/, "").trim();
+        listElement.appendChild(li);
         chat.scrollTop = chat.scrollHeight;
         i++;
       } else {
@@ -121,3 +109,4 @@ function streamMessage(cssClass, text) {
     }, 15);
   }
 }
+  
