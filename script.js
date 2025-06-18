@@ -7,23 +7,22 @@ form.addEventListener("submit", async (e) => {
   const message = input.value.trim();
   if (!message) return;
 
-  appendMessage("Gebruiker", message, "user-message");
+  appendMessage("user", message);
   input.value = "";
 
-  const agentMsg = appendMessage("Agent", "", "agent-message");
+  const messageContainer = appendMessage("assistant", ""); // placeholder voor stream
 
   try {
     const response = await fetch("https://chatproxy.azurewebsites.net/api/chatproxy", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message })
+      body: JSON.stringify({ message }),
     });
 
     if (!response.ok || !response.body) {
       const errorText = await response.text();
       console.error("Responsetekst:", errorText);
-      agentMsg.textContent = "Er ging iets mis.";
-      return;
+      throw new Error(`Serverfout: ${response.status}`);
     }
 
     const reader = response.body.getReader();
@@ -33,22 +32,21 @@ form.addEventListener("submit", async (e) => {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-      const chunk = decoder.decode(value, { stream: true });
-      result += chunk;
-      agentMsg.textContent = result;
+      result += decoder.decode(value, { stream: true });
+      messageContainer.innerHTML = result;
       chat.scrollTop = chat.scrollHeight;
     }
   } catch (err) {
+    messageContainer.innerHTML = "Er ging iets mis.";
     console.error("Fout in fetch:", err);
-    agentMsg.textContent = "Er ging iets mis.";
   }
 });
 
-function appendMessage(sender, text, cssClass) {
+function appendMessage(role, text) {
   const msg = document.createElement("div");
-  msg.classList.add("message", cssClass);
-  msg.innerHTML = `<div><strong>${sender}:</strong></div><div>${text}</div>`;
+  msg.className = "message " + (role === "user" ? "user-message" : "agent-message");
+  msg.innerHTML = text;
   chat.appendChild(msg);
   chat.scrollTop = chat.scrollHeight;
-  return msg.querySelector("div:last-child");
+  return msg;
 }
