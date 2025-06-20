@@ -34,7 +34,7 @@ form.addEventListener("submit", async (e) => {
   input.value = "";
 
   try {
-    const response = await fetch("https://chatproxy.azurewebsites.net/api/chatproxy", {
+    const response = await fetch("https://chatproxy.azurewebsites.net/api/chatproxy_streaming", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message, thread_id: threadId })
