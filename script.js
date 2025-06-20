@@ -4,7 +4,6 @@ const input = document.getElementById("user-input");
 
 let threadId = null;
 
-// Openingsbericht bij het laden van de pagina
 window.onload = () => {
   const welkomstHTML = `
     Welkom bij de <strong>AI Indicatiehulp</strong>!<br>
@@ -33,6 +32,8 @@ form.addEventListener("submit", async (e) => {
   appendMessage("user-message", message);
   input.value = "";
 
+  const msgElem = appendMessage("agent-message", "");
+
   try {
     const response = await fetch("https://chatproxy.azurewebsites.net/api/chatproxy", {
       method: "POST",
@@ -40,17 +41,29 @@ form.addEventListener("submit", async (e) => {
       body: JSON.stringify({ message, thread_id: threadId })
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Responsetekst:", errorText);
-      throw new Error(`Serverfout: ${response.status}`);
+    if (!response.ok || !response.body) {
+      msgElem.textContent = "⚠️ Fout bij ophalen van antwoord.";
+      return;
     }
 
-    const data = await response.json();
-    threadId = data.thread_id;
-    streamMessage("agent-message", data.reply);
+    const tid = response.headers.get("x-thread-id");
+    if (tid) threadId = tid;
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    let fullText = "";
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      fullText += chunk;
+      msgElem.textContent = fullText;
+      chat.scrollTop = chat.scrollHeight;
+    }
   } catch (err) {
-    streamMessage("agent-message", "Er ging iets mis.");
+    msgElem.textContent = "⚠️ Er ging iets mis.";
     console.error("Fout in fetch:", err);
   }
 });
@@ -58,9 +71,10 @@ form.addEventListener("submit", async (e) => {
 function appendMessage(cssClass, text) {
   const msg = document.createElement("div");
   msg.classList.add("message", cssClass);
-  msg.textContent = text;
+  msg.textContent = text || "";
   chat.appendChild(msg);
   chat.scrollTop = chat.scrollHeight;
+  return msg;
 }
 
 function appendFormattedMessage(cssClass, htmlContent) {
@@ -69,43 +83,4 @@ function appendFormattedMessage(cssClass, htmlContent) {
   msg.innerHTML = htmlContent;
   chat.appendChild(msg);
   chat.scrollTop = chat.scrollHeight;
-}
-
-function streamMessage(cssClass, text) {
-  const msg = document.createElement("div");
-  msg.classList.add("message", cssClass);
-  chat.appendChild(msg);
-
-  const lines = text.split("\n").filter(line => line.trim() !== "");
-
-  const isNumberedList = lines.length > 1 && lines.every(line => /^\d+\.\s+/.test(line.trim()));
-  const isBulletedList = lines.length > 1 && lines.every(line => /^[-*•]\s+/.test(line.trim()));
-
-  if (isNumberedList || isBulletedList) {
-    const listElement = document.createElement(isNumberedList ? "ol" : "ul");
-    msg.appendChild(listElement);
-    let i = 0;
-
-    const interval = setInterval(() => {
-      if (i < lines.length) {
-        const li = document.createElement("li");
-        li.textContent = lines[i].replace(/^(\d+\.\s+|[-*•]\s+)/, "").trim();
-        listElement.appendChild(li);
-        chat.scrollTop = chat.scrollHeight;
-        i++;
-      } else {
-        clearInterval(interval);
-      }
-    }, 200);
-  } else {
-    let index = 0;
-    const interval = setInterval(() => {
-      if (index < text.length) {
-        msg.textContent += text.charAt(index++);
-        chat.scrollTop = chat.scrollHeight;
-      } else {
-        clearInterval(interval);
-      }
-    }, 15);
-  }
 }
