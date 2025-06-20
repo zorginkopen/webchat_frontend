@@ -9,7 +9,7 @@
       font-family: "Segoe UI", sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #fff8e1; /* zachte oranje achtergrond */
+      background-color: #fff8e1;
       display: flex;
       flex-direction: column;
       height: 100vh;
@@ -17,7 +17,7 @@
 
     h1 {
       text-align: center;
-      background-color: #ffc827; /* oranje kopbalk */
+      background-color: #ffc827;
       color: black;
       padding: 12px 0;
       margin: 0;
@@ -53,6 +53,18 @@
       background-color: #fffde7;
       align-self: flex-start;
       border-bottom-left-radius: 0;
+    }
+
+    #stream-output {
+      background-color: #fffde7;
+      align-self: flex-start;
+      margin: 0 16px 10px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      max-width: 75%;
+      font-size: 15px;
+      line-height: 1.4;
+      white-space: pre-wrap;
     }
 
     #input-form {
@@ -91,12 +103,14 @@
   <h1>Indicatiehulp.ai</h1>
 
   <div id="chat"></div>
+  <div id="stream-output"></div>
 
   <form id="input-form">
     <input type="text" id="user-input" placeholder="Typ je bericht..." autocomplete="off" />
     <button type="submit">Verstuur</button>
   </form>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
   <script src="script.js"></script>
 
 </body>
