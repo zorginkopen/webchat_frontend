@@ -13,8 +13,8 @@ window.onload = () => {
 
     <strong>Kies een optie om te starten:</strong><br>
     1. In kaart brengen cliëntsituatie<br>
-    2. Bekijk richtlijnen<br>
-    3. Contact opnemen met de zorgexpert<br><br>
+    2. Indicatiestelling extramuraal (zorg thuis)<br>
+    3. Indicatiestelling intramuraal (verpleeghuis)<br><br>
 
     Wil je direct een indicatieadvies laten opstellen? Dan heb ik meer informatie nodig over de cliënt.<br>
     Geef bij voorkeur ook je naam en een e-mailadres of telefoonnummer,<br>
