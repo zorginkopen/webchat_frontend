@@ -43,9 +43,8 @@ form.addEventListener("submit", async (e) => {
 
     const data = await response.json();
     threadId = data.thread_id;
-
   } catch (err) {
-    appendMessage("agent-message", "Er ging iets mis bij het ophalen van een antwoord.");
+    appendMessage("agent-message", "⚠️ Er ging iets mis bij het ophalen van een antwoord.");
     console.error("Fout in fetch:", err);
   }
 });
@@ -66,16 +65,20 @@ function appendFormattedMessage(cssClass, htmlContent) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-// ✅ SignalR verbinden en tokens verwerken
+// ✅ SignalR setup
 const connection = new signalR.HubConnectionBuilder()
-  .withUrl("https://chatproxy.azurewebsites.net/api")
+  .withUrl("https://chatproxy.azurewebsites.net/api/negotiate", {
+    withCredentials: false  // ✅ voorkom CORS-misconfiguratie
+  })
+  .configureLogging(signalR.LogLevel.Information)
   .build();
 
 connection.on("newToken", token => {
-  streamOutput.textContent += token + " ";
+  streamOutput.textContent += token;
   chat.scrollTop = chat.scrollHeight;
 });
 
-connection.start()
-  .then(() => console.log("Verbonden met SignalR"))
-  .catch(err => console.error("SignalR fout:", err));
+connection
+  .start()
+  .then(() => console.log("✅ Verbonden met SignalR"))
+  .catch(err => console.error("❌ SignalR fout:", err));
