@@ -1,112 +1,45 @@
-const chat = document.getElementById("chat");
-const form = document.getElementById("input-form");
-const input = document.getElementById("user-input");
+document.getElementById('chat-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const input = document.getElementById('user-input');
+    const message = input.value.trim();
+    if (!message) return;
 
-let threadId = null;
+    appendMessage('user', message);
+    input.value = '';
+    
+    const responseElement = appendMessage('assistant', ''); // Leeg bericht dat we gaan vullen
 
-// Openingsbericht bij het laden van de pagina
-window.onload = () => {
-  const welkomstHTML = `
-    Welkom bij de <strong>AI Indicatiehulp</strong>!<br>
-    Ik ben jouw digitale adviseur voor:<br>
-    het stellen van de juiste indicatie en het opstellen van een conceptadvies voor de zorgexpert (Kim Brand).<br><br>
-
-    <strong>Kies een optie om te starten:</strong><br>
-    1. In kaart brengen cliëntsituatie<br>
-    2. Indicatiestelling extramuraal (zorg thuis)<br>
-    3. Indicatiestelling intramuraal (verpleeghuis)<br><br>
-
-    Wil je direct een indicatieadvies laten opstellen? Dan heb ik meer informatie nodig over de cliënt.<br>
-    Geef bij voorkeur ook je naam en een e-mailadres of telefoonnummer,<br>
-    zodat we het conceptadvies voor beoordeling kunnen indienen.<br><br>
-
-    <em>Met welke optie wil je verder?</em>
-  `;
-  appendFormattedMessage("agent-message", welkomstHTML);
-};
-
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const message = input.value.trim();
-  if (!message) return;
-
-  appendMessage("user-message", message);
-  input.value = "";
-
-  try {
-    const response = await fetch("https://chatproxy.azurewebsites.net/api/chatproxy", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message, thread_id: threadId })
+    const response = await fetch('https://<JOUW-FUNCTION-APP-URL>/api/chatproxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Responsetekst:", errorText);
-      throw new Error(`Serverfout: ${response.status}`);
+    if (!response.ok || !response.body) {
+        responseElement.textContent = '⚠️ Fout bij ophalen van antwoord.';
+        return;
     }
 
-    const data = await response.json();
-    threadId = data.thread_id;
-    streamMessage("agent-message", data.reply);
-  } catch (err) {
-    streamMessage("agent-message", "Er ging iets mis.");
-    console.error("Fout in fetch:", err);
-  }
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let fullText = '';
+
+    while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        fullText += chunk;
+        responseElement.textContent = fullText;
+    }
 });
 
-function appendMessage(cssClass, text) {
-  const msg = document.createElement("div");
-  msg.classList.add("message", cssClass);
-  msg.textContent = text;
-  chat.appendChild(msg);
-  chat.scrollTop = chat.scrollHeight;
+function appendMessage(role, content) {
+    const chatBox = document.getElementById('chat-box');
+    const messageElem = document.createElement('div');
+    messageElem.className = role;
+    messageElem.textContent = content;
+    chatBox.appendChild(messageElem);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    return messageElem;
 }
-
-function appendFormattedMessage(cssClass, htmlContent) {
-  const msg = document.createElement("div");
-  msg.classList.add("message", cssClass);
-  msg.innerHTML = htmlContent;
-  chat.appendChild(msg);
-  chat.scrollTop = chat.scrollHeight;
-}
-
-function streamMessage(cssClass, text) {
-  const msg = document.createElement("div");
-  msg.classList.add("message", cssClass);
-  chat.appendChild(msg);
-
-  const lines = text.split("\n").filter(line => line.trim() !== "");
-
-  const isNumberedList = lines.length > 1 && lines.every(line => /^\d+\.\s+/.test(line.trim()));
-  const isBulletedList = lines.length > 1 && lines.every(line => /^[-*•]\s+/.test(line.trim()));
-
-  if (isNumberedList || isBulletedList) {
-    const listElement = document.createElement(isNumberedList ? "ol" : "ul");
-    msg.appendChild(listElement);
-    let i = 0;
-
-    const interval = setInterval(() => {
-      if (i < lines.length) {
-        const li = document.createElement("li");
-        li.textContent = lines[i].replace(/^(\d+\.\s+|[-*•]\s+)/, "").trim();
-        listElement.appendChild(li);
-        chat.scrollTop = chat.scrollHeight;
-        i++;
-      } else {
-        clearInterval(interval);
-      }
-    }, 200);
-  } else {
-    let index = 0;
-    const interval = setInterval(() => {
-      if (index < text.length) {
-        msg.textContent += text.charAt(index++);
-        chat.scrollTop = chat.scrollHeight;
-      } else {
-        clearInterval(interval);
-      }
-    }, 15);
-  }
-}
-  
