@@ -27,9 +27,9 @@ async function startSignalR() {
 
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(connectionInfo.url, {
-        accessTokenFactory: () => connectionInfo.accessToken
-        // skipNegotiation: true → is nu UITGESCHAKELD
-        // transport wordt automatisch gekozen
+        accessTokenFactory: () => connectionInfo.accessToken,
+        skipNegotiation: true,
+        transport: signalR.HttpTransportType.LongPolling
       })
       .configureLogging(signalR.LogLevel.Information)
       .build();
@@ -56,7 +56,7 @@ document.getElementById("input-form").addEventListener("submit", async event => 
   appendMessage("user", message);
   inputField.value = "";
 
-  // Hier kun je in de toekomst een POST doen naar je Function om het bericht op te slaan of te routeren
+  // Hier kun je optioneel het bericht doorsturen naar je backend met fetch()
 });
 
 startSignalR();
