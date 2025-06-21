@@ -1,73 +1,111 @@
-let connection;
+const chat = document.getElementById("chat");
+const form = document.getElementById("input-form");
+const input = document.getElementById("user-input");
 
-async function startSignalR() {
-  try {
-    // Gebruik GET in plaats van POST
-    const negotiateResponse = await fetch("/api/negotiate");
-    
-    if (!negotiateResponse.ok) {
-      throw new Error("Negotiate endpoint gaf status: " + negotiateResponse.status);
-    }
+let threadId = null;
 
-    const negotiateData = await negotiateResponse.json();
+// Openingsbericht bij het laden van de pagina
+window.onload = () => {
+  const welkomstHTML = `
+    Welkom bij de <strong>AI Indicatiehulp</strong>!<br>
+    Ik ben jouw digitale adviseur voor:<br>
+    het stellen van de juiste indicatie en het opstellen van een conceptadvies voor de zorgexpert (Kim Brand).<br><br>
 
-    connection = new signalR.HubConnectionBuilder()
-      .withUrl(negotiateData.url, {
-        accessTokenFactory: () => negotiateData.accessToken
-      })
-      .withAutomaticReconnect()
-      .configureLogging(signalR.LogLevel.Information)
-      .build();
+    <strong>Kies een optie om te starten:</strong><br>
+    1. In kaart brengen cliëntsituatie<br>
+    2. Indicatiestelling extramuraal (zorg thuis)<br>
+    3. Indicatiestelling intramuraal (verpleeghuis)<br><br>
 
-    // Luister naar berichten van backend via SignalR
-    connection.on("newToken", (data) => {
-      console.log("✅ Ontvangen van SignalR:", data);
-      appendMessage("agent", data);
-    });
+    Wil je direct een indicatieadvies laten opstellen? Dan heb ik meer informatie nodig over de cliënt.<br>
+    Geef bij voorkeur ook je naam en een e-mailadres of telefoonnummer,<br>
+    zodat we het conceptadvies voor beoordeling kunnen indienen.<br><br>
 
-    await connection.start();
-    console.log("✅ SignalR verbonden");
-  } catch (err) {
-    console.error("❌ SignalR fout:", err);
-    appendMessage("agent", "⚠️ Verbinden met de server is mislukt.");
-  }
-}
+    <em>Met welke optie wil je verder?</em>
+  `;
+  appendFormattedMessage("agent-message", welkomstHTML);
+};
 
-// Bericht tonen in de chatbox
-function appendMessage(sender, text) {
-  const chat = document.getElementById("chat");
-  const msgDiv = document.createElement("div");
-  msgDiv.classList.add(sender === "user" ? "user-message" : "bot-message");
-  msgDiv.innerText = text;
-  chat.appendChild(msgDiv);
-  chat.scrollTop = chat.scrollHeight;
-}
-
-// Verstuur gebruikersbericht naar backend
-document.getElementById("input-form").addEventListener("submit", async function (e) {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const input = document.getElementById("user-input");
   const message = input.value.trim();
   if (!message) return;
 
-  appendMessage("user", message);
+  appendMessage("user-message", message);
   input.value = "";
 
   try {
-    await fetch("/api/chatproxy", {
+    const response = await fetch("https://chatproxy.azurewebsites.net/api/chatproxy", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ message: message })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message, thread_id: threadId })
     });
-  } catch (error) {
-    console.error("❌ Fout bij versturen bericht:", error);
-    appendMessage("agent", "⚠️ Bericht verzenden mislukt.");
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Responsetekst:", errorText);
+      throw new Error(`Serverfout: ${response.status}`);
+    }
+
+    const data = await response.json();
+    threadId = data.thread_id;
+    streamMessage("agent-message", data.reply);
+  } catch (err) {
+    streamMessage("agent-message", "Er ging iets mis.");
+    console.error("Fout in fetch:", err);
   }
 });
 
-// Start SignalR bij laden van de pagina
-window.onload = () => {
-  startSignalR();
-};
+function appendMessage(cssClass, text) {
+  const msg = document.createElement("div");
+  msg.classList.add("message", cssClass);
+  msg.textContent = text;
+  chat.appendChild(msg);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function appendFormattedMessage(cssClass, htmlContent) {
+  const msg = document.createElement("div");
+  msg.classList.add("message", cssClass);
+  msg.innerHTML = htmlContent;
+  chat.appendChild(msg);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function streamMessage(cssClass, text) {
+  const msg = document.createElement("div");
+  msg.classList.add("message", cssClass);
+  chat.appendChild(msg);
+
+  const lines = text.split("\n").filter(line => line.trim() !== "");
+
+  const isNumberedList = lines.length > 1 && lines.every(line => /^\d+\.\s+/.test(line.trim()));
+  const isBulletedList = lines.length > 1 && lines.every(line => /^[-*•]\s+/.test(line.trim()));
+
+  if (isNumberedList || isBulletedList) {
+    const listElement = document.createElement(isNumberedList ? "ol" : "ul");
+    msg.appendChild(listElement);
+    let i = 0;
+
+    const interval = setInterval(() => {
+      if (i < lines.length) {
+        const li = document.createElement("li");
+        li.textContent = lines[i].replace(/^(\d+\.\s+|[-*•]\s+)/, "").trim();
+        listElement.appendChild(li);
+        chat.scrollTop = chat.scrollHeight;
+        i++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 200);
+  } else {
+    let index = 0;
+    const interval = setInterval(() => {
+      if (index < text.length) {
+        msg.textContent += text.charAt(index++);
+        chat.scrollTop = chat.scrollHeight;
+      } else {
+        clearInterval(interval);
+      }
+    }, 15);
+  }
+}
