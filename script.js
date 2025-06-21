@@ -2,8 +2,13 @@ let connection;
 
 async function startSignalR() {
   try {
-    // Haal token en URL op van negotiate backend
-    const negotiateResponse = await fetch("/api/negotiate", { method: "POST" });
+    // Gebruik GET in plaats van POST
+    const negotiateResponse = await fetch("/api/negotiate");
+    
+    if (!negotiateResponse.ok) {
+      throw new Error("Negotiate endpoint gaf status: " + negotiateResponse.status);
+    }
+
     const negotiateData = await negotiateResponse.json();
 
     connection = new signalR.HubConnectionBuilder()
@@ -14,19 +19,21 @@ async function startSignalR() {
       .configureLogging(signalR.LogLevel.Information)
       .build();
 
-    // Ontvangen bericht van backend
+    // Luister naar berichten van backend via SignalR
     connection.on("newToken", (data) => {
       console.log("✅ Ontvangen van SignalR:", data);
-      appendMessage("agent", data);  // Tekstbericht toevoegen aan chatvenster
+      appendMessage("agent", data);
     });
 
     await connection.start();
-    console.log("✅ Verbonden met SignalR");
+    console.log("✅ SignalR verbonden");
   } catch (err) {
     console.error("❌ SignalR fout:", err);
+    appendMessage("agent", "⚠️ Verbinden met de server is mislukt.");
   }
 }
 
+// Bericht tonen in de chatbox
 function appendMessage(sender, text) {
   const chat = document.getElementById("chat");
   const msgDiv = document.createElement("div");
@@ -36,7 +43,7 @@ function appendMessage(sender, text) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-// Verstuur bericht naar backend via fetch (start response)
+// Verstuur gebruikersbericht naar backend
 document.getElementById("input-form").addEventListener("submit", async function (e) {
   e.preventDefault();
   const input = document.getElementById("user-input");
@@ -56,10 +63,11 @@ document.getElementById("input-form").addEventListener("submit", async function 
     });
   } catch (error) {
     console.error("❌ Fout bij versturen bericht:", error);
-    appendMessage("agent", "⚠️ Er ging iets mis bij het verzenden.");
+    appendMessage("agent", "⚠️ Bericht verzenden mislukt.");
   }
 });
 
+// Start SignalR bij laden van de pagina
 window.onload = () => {
   startSignalR();
 };
