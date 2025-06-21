@@ -1,42 +1,37 @@
 async function startSignalR() {
-  try {
-    // Stap 1: Haal negotiate-informatie op
-    const negotiateResponse = await fetch("https://chatproxy.azurewebsites.net/api/negotiate", {
-      method: "POST"
-    });
+    try {
+        // Stap 1: Vraag negotiate-informatie op van je Function App
+        const response = await fetch("https://chatproxy.azurewebsites.net/api/negotiate", {
+            method: "POST"
+        });
 
-    if (!negotiateResponse.ok) {
-      throw new Error(`Negotiate failed: ${negotiateResponse.status}`);
+        if (!response.ok) {
+            throw new Error(`Negotiate failed: ${response.status}`);
+        }
+
+        const connectionInfo = await response.json();
+
+        // Stap 2: Bouw de verbinding met het opgehaalde URL + token
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl(connectionInfo.url, {
+                accessTokenFactory: () => connectionInfo.accessToken  // ⬅️ essentieel
+            })
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+
+        // Stap 3: Stel eventhandler in
+        connection.on("newMessage", message => {
+            appendMessage("assistant", message);
+        });
+
+        // Stap 4: Start de verbinding
+        await connection.start();
+        console.log("✅ Verbonden met SignalR hub");
+    } catch (err) {
+        console.error("❌ SignalR fout:", err);
+        appendMessage("assistant", "⚠️ Verbinden met SignalR is mislukt.");
     }
-
-    const negotiateData = await negotiateResponse.json();
-    console.log("🔐 Negotiation gelukt:", negotiateData);
-
-    // Stap 2: Start de SignalR-verbinding
-    const connection = new signalR.HubConnectionBuilder()
-      .withUrl("https://chatproxysignalr.service.signalr.net/client/?hub=chat", {
-        accessTokenFactory: () => negotiateData.accessToken
-      })
-      .configureLogging(signalR.LogLevel.Information)
-      .build();
-
-    // Stap 3: Ontvang berichten van de backend
-    connection.on("newToken", token => {
-      const chat = document.getElementById("chat");
-      const streamOutput = document.getElementById("streamOutput");
-      if (streamOutput && chat) {
-        streamOutput.textContent += token;
-        chat.scrollTop = chat.scrollHeight;
-      }
-    });
-
-    // Stap 4: Start verbinding
-    await connection.start();
-    console.log("✅ Verbonden met SignalR");
-
-  } catch (err) {
-    console.error("❌ SignalR fout:", err);
-  }
 }
 
+// Start verbinding bij laden
 startSignalR();
