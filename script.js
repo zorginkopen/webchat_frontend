@@ -4,6 +4,7 @@ function streamMessage(cssClass, text) {
   chat.appendChild(msg);
 
   const lines = text.split("\n");
+
   let currentList = null;
 
   const interval = setInterval(() => {
@@ -15,7 +16,6 @@ function streamMessage(cssClass, text) {
     const line = lines.shift().trim();
 
     if (line === "") {
-      currentList = null; // reset lijst bij lege regel
       const br = document.createElement("br");
       msg.appendChild(br);
       return;
@@ -50,4 +50,3 @@ function streamMessage(cssClass, text) {
     chat.scrollTop = chat.scrollHeight;
   }, 50);
 }
-
