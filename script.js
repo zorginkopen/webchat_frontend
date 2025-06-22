@@ -76,45 +76,36 @@ function streamMessage(cssClass, text) {
   msg.classList.add("message", cssClass);
   chat.appendChild(msg);
 
-  // Detecteer genummerde lijst zoals: 1. tekst 2. tekst 3. tekst
-  const numberedPattern = /(?:^|\s)(\d+)\.\s+([^0-9\.\n]+)/g;
-  let numberedMatches = [...text.matchAll(numberedPattern)];
+  const lines = text.split("\n").filter(line => line.trim() !== "");
 
-  // Detecteer bulletlijst zoals: - tekst of • tekst
-  const bulletPattern = /(?:^|\s)[\-•*]\s+([^\n]+)/g;
-  let bulletMatches = [...text.matchAll(bulletPattern)];
+  const isNumberedList = lines.length > 1 && lines.every(line => /^\d+\.\s+/.test(line.trim()));
+  const isBulletedList = lines.length > 1 && lines.every(line => /^[-*•]\s+/.test(line.trim()));
 
-  if (numberedMatches.length >= 2) {
-    const list = document.createElement("ol");
-    numberedMatches.forEach(match => {
-      const li = document.createElement("li");
-      li.textContent = match[2].trim();
-      list.appendChild(li);
-    });
-    msg.appendChild(list);
-    return;
+  if (isNumberedList || isBulletedList) {
+    const listElement = document.createElement(isNumberedList ? "ol" : "ul");
+    msg.appendChild(listElement);
+    let i = 0;
+
+    const interval = setInterval(() => {
+      if (i < lines.length) {
+        const li = document.createElement("li");
+        li.textContent = lines[i].replace(/^(\d+\.\s+|[-*•]\s+)/, "").trim();
+        listElement.appendChild(li);
+        chat.scrollTop = chat.scrollHeight;
+        i++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 200);
+  } else {
+    let index = 0;
+    const interval = setInterval(() => {
+      if (index < text.length) {
+        msg.textContent += text.charAt(index++);
+        chat.scrollTop = chat.scrollHeight;
+      } else {
+        clearInterval(interval);
+      }
+    }, 15);
   }
-
-  if (bulletMatches.length >= 2) {
-    const list = document.createElement("ul");
-    bulletMatches.forEach(match => {
-      const li = document.createElement("li");
-      li.textContent = match[1].trim();
-      list.appendChild(li);
-    });
-    msg.appendChild(list);
-    return;
-  }
-
-  // Geen lijst → toon als streaming tekst
-  let index = 0;
-  msg.textContent = "";
-  const interval = setInterval(() => {
-    if (index < text.length) {
-      msg.textContent += text.charAt(index++);
-      chat.scrollTop = chat.scrollHeight;
-    } else {
-      clearInterval(interval);
-    }
-  }, 15);
 }
