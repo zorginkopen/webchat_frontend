@@ -89,7 +89,7 @@ function streamMessage(cssClass, text) {
     const interval = setInterval(() => {
       if (i < lines.length) {
         const li = document.createElement("li");
-        li.textContent = lines[i].replace(/^(\d+\.\s+|[-*•]\s+)/, "").trim();
+        li.innerHTML  = lines[i].replace(/^(\d+\.\s+|[-*•]\s+)/, "").trim();
         listElement.appendChild(li);
         chat.scrollTop = chat.scrollHeight;
         i++;
