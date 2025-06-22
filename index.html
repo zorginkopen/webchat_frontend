@@ -2,102 +2,104 @@
 <html lang="nl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Indicatiehulp</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Indicatiehulp.ai</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #fff8e1;
+      font-family: "Segoe UI", sans-serif;
       margin: 0;
       padding: 0;
+      background-color: #fff8e1; /* zachte oranje achtergrond */
       display: flex;
       flex-direction: column;
       height: 100vh;
     }
 
-    header {
-      background-color: #ffc827;
-      padding: 1rem;
+    h1 {
       text-align: center;
-      font-weight: bold;
-      font-size: 1.2rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background-color: #ffc827; /* oranje kopbalk */
+      color: black;
+      padding: 12px 0;
+      margin: 0;
+      font-size: 20px;
     }
 
-    #messages {
+    #chat {
       flex-grow: 1;
       overflow-y: auto;
-      padding: 1rem;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      background-color: #fff8e1;
     }
 
     .message {
-      max-width: 80%;
-      margin-bottom: 1rem;
-      padding: 0.75rem 1rem;
-      border-radius: 1.5rem;
+      margin-bottom: 10px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      max-width: 75%;
+      word-wrap: break-word;
+      font-size: 15px;
       line-height: 1.4;
-      white-space: pre-line;
     }
 
-    .user {
-      background-color: #ffd54f;
+    .user-message {
+      background-color: #ffe082;
       align-self: flex-end;
-      margin-left: auto;
+      border-bottom-right-radius: 0;
     }
 
-    .assistant {
-      background-color: #ffffff;
-      border: 1px solid #eee;
+    .agent-message {
+      background-color: #fffde7;
       align-self: flex-start;
-      margin-right: auto;
+      border-bottom-left-radius: 0;
     }
 
-    form {
+    #input-form {
       display: flex;
-      padding: 1rem;
-      border-top: 1px solid #ddd;
-      background-color: #fff;
+      border-top: 1px solid #ccc;
+      padding: 10px;
+      background: white;
     }
 
-    input[type="text"] {
+    #user-input {
       flex-grow: 1;
-      padding: 0.75rem;
-      border-radius: 1rem;
+      padding: 10px;
+      font-size: 16px;
       border: 1px solid #ccc;
-      font-size: 1rem;
-      margin-right: 0.5rem;
+      border-radius: 20px;
+      margin-right: 10px;
     }
 
     button {
+      padding: 10px 16px;
+      font-size: 16px;
       background-color: #ffc827;
+      color: black;
       border: none;
-      border-radius: 1rem;
-      padding: 0.75rem 1.5rem;
-      font-weight: bold;
+      border-radius: 20px;
       cursor: pointer;
     }
 
-    ul {
-      padding-left: 1.2rem;
-      margin: 0.5rem 0;
-    }
-
-    li {
-      margin-bottom: 0.4rem;
+    button:hover {
+      background-color: #ffa000;
     }
   </style>
 </head>
 <body>
-  <header>AI Indicatiehulp</header>
 
-  <div id="messages"></div>
+  <h1>Indicatiehulp.ai</h1>
+
+  <div id="chat"></div>
 
   <form id="input-form">
-    <input type="text" id="user-input" placeholder="Typ je vraag..." autocomplete="off" />
-    <button type="submit">Verzend</button>
+    <input type="text" id="user-input" placeholder="Typ je bericht..." autocomplete="off" />
+    <button type="submit">Verstuur</button>
   </form>
 
   <script src="script.js"></script>
+
 </body>
 </html>
+
 
