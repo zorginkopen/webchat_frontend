@@ -7,20 +7,20 @@ let threadId = null;
 // Openingsbericht bij het laden van de pagina
 window.onload = () => {
   const welkomstHTML = `
-    Welkom bij de <strong>AI Indicatiehulp</strong>!<br>
-    Ik ben jouw digitale adviseur voor:<br>
-    het stellen van de juiste indicatie en het opstellen van een conceptadvies voor de zorgexpert (Kim Brand).<br><br>
+    Welkom bij <strong>Indicatiehulp.ai</strong>!<br>
+    Ik ben Indi, jouw digitale adviseur voor:<br>
+    het stellen van de juiste indicatie en het opstellen van een conceptadvies voor de (Evean) zorgexpert.<br><br>
 
-    <strong>Kies een optie om te starten:</strong><br>
-    1. In kaart brengen cliëntsituatie<br>
-    2. Indicatiestelling extramuraal (zorg thuis)<br>
-    3. Indicatiestelling intramuraal (verpleeghuis)<br><br>
+    <strong>Het volgende is bijv. mogelijk:</strong><br>
+    - In kaart brengen cliëntsituatie<br>
+    - Indicatiestelling extramuraal (zorg thuis)<br>
+    - Indicatiestelling intramuraal (verpleeghuis)<br><br>
 
     Wil je direct een indicatieadvies laten opstellen? Dan heb ik meer informatie nodig over de cliënt.<br>
     Geef bij voorkeur ook je naam en een e-mailadres of telefoonnummer,<br>
     zodat we het conceptadvies voor beoordeling kunnen indienen.<br><br>
 
-    <em>Met welke optie wil je verder?</em>
+    <em>Start met het adviesgesprek</em>
   `;
   appendFormattedMessage("agent-message", welkomstHTML);
 };
