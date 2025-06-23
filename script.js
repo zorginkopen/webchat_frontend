@@ -4,7 +4,7 @@ const input = document.getElementById("user-input");
 
 let threadId = null;
 
-// Openingsbericht bij het laden van de pagina
+// Welkomstbericht bij laden
 window.onload = () => {
   const welkomstHTML = `
     Welkom bij <strong>Indicatiehulp.ai</strong>!<br>
@@ -76,14 +76,41 @@ function streamMessage(cssClass, text) {
   msg.classList.add("message", cssClass);
   chat.appendChild(msg);
 
-  // **...** omzetten naar <strong>...</strong>
-  let formattedText = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+  // Opschoning & HTML formatting
+  let formattedText = text
+    .replace(/\[\d+:\d+†source\]/g, "") // bronverwijzingen weghalen
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // **vet**
+    .replace(
+      /(https?:\/\/[^\s<>]+)/g,
+      '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+    ); // Links klikbaar maken
 
-  // Inline bullets detecteren en splitsen
-  if (/(?:^|\s)[\-•*]\s/.test(formattedText)) {
-    // Probeer bulletlijst uit inline te extraheren
-    const parts = formattedText.split(/(?=[\-•*]\s)/g);
-    if (parts.length >= 2) {
+  const lines = formattedText.split("\n").filter(line => line.trim() !== "");
+  const isNumberedList = lines.length > 1 && lines.every(line => /^\d+\.\s+/.test(line));
+  const isBulletedList = lines.length > 1 && lines.every(line => /^[-*•]\s+/.test(line));
+
+  if (isNumberedList || isBulletedList) {
+    const listElement = document.createElement(isNumberedList ? "ol" : "ul");
+    msg.appendChild(listElement);
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < lines.length) {
+        const li = document.createElement("li");
+        li.innerHTML = lines[i].replace(/^(\d+\.\s+|[-*•]\s+)/, "").trim();
+        listElement.appendChild(li);
+        chat.scrollTop = chat.scrollHeight;
+        i++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 200);
+    return;
+  }
+
+  // Inline bulletlijst detectie: "- <strong>item</strong>"
+  if (/\-\s+<strong>.*?<\/strong>/.test(formattedText)) {
+    const parts = formattedText.split(/-\s+(?=<strong>)/g);
+    if (parts.length > 2) {
       const intro = parts[0].trim();
       if (intro) {
         const p = document.createElement("p");
@@ -92,13 +119,10 @@ function streamMessage(cssClass, text) {
       }
 
       const ul = document.createElement("ul");
-      parts.slice(1).forEach(part => {
-        const clean = part.replace(/^[-•*]\s*/, "").trim();
-        if (clean) {
-          const li = document.createElement("li");
-          li.innerHTML = clean;
-          ul.appendChild(li);
-        }
+      parts.slice(1).forEach(item => {
+        const li = document.createElement("li");
+        li.innerHTML = item.trim();
+        ul.appendChild(li);
       });
       msg.appendChild(ul);
       chat.scrollTop = chat.scrollHeight;
@@ -106,36 +130,15 @@ function streamMessage(cssClass, text) {
     }
   }
 
-  // Inline genummerde lijst detecteren
-  const listPattern = /(?:^|\s)(\d+\.\s.*?)(?=\s\d+\.\s|$)/gs;
-  const matches = [...formattedText.matchAll(listPattern)];
-
-  if (matches.length >= 2) {
-    const introText = formattedText.split(matches[0][0])[0].trim();
-    if (introText) {
-      const p = document.createElement("p");
-      p.innerHTML = introText;
-      msg.appendChild(p);
+  // Default: typ-animatie met inline HTML
+  let index = 0;
+  const interval = setInterval(() => {
+    if (index < formattedText.length) {
+      msg.innerHTML += formattedText.charAt(index++);
+      chat.scrollTop = chat.scrollHeight;
+    } else {
+      clearInterval(interval);
     }
-
-    const ol = document.createElement("ol");
-    matches.forEach(match => {
-      const itemText = match[1].replace(/^\d+\.\s*/, "").trim();
-      const li = document.createElement("li");
-      li.innerHTML = itemText;
-      ol.appendChild(li);
-    });
-    msg.appendChild(ol);
-  } else {
-    // Geen lijst – gewoon streamen
-    let index = 0;
-    const interval = setInterval(() => {
-      if (index < formattedText.length) {
-        msg.innerHTML += formattedText.charAt(index++);
-        chat.scrollTop = chat.scrollHeight;
-      } else {
-        clearInterval(interval);
-      }
-    }, 15);
-  }
+  }, 15);
 }
+
