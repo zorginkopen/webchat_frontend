@@ -76,34 +76,36 @@ function streamMessage(cssClass, text) {
   msg.classList.add("message", cssClass);
   chat.appendChild(msg);
 
-  // Splits tekst in regels
-  const lines = text.split("\n").filter(line => line.trim() !== "");
+  // Vervang **...** door <strong>...</strong>
+  const formattedText = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
 
-  const isNumberedList = lines.length > 1 && lines.every(line => /^\d+\.\s+/.test(line.trim()));
-  const isBulletedList = lines.length > 1 && lines.every(line => /^[-*•]\s+/.test(line.trim()));
+  // Detecteer inline genummerde lijst: "1. ..., 2. ..., 3. ..."
+  const listPattern = /(?:^|\s)(\d+\.\s.*?)(?=\s\d+\.\s|$)/gs;
+  const matches = [...formattedText.matchAll(listPattern)];
 
-  if (isNumberedList || isBulletedList) {
-    const listElement = document.createElement(isNumberedList ? "ol" : "ul");
-    msg.appendChild(listElement);
-    let i = 0;
+  if (matches.length >= 2) {
+    // Introductietekst vóór de eerste lijst
+    const introText = formattedText.split(matches[0][0])[0].trim();
+    if (introText) {
+      const p = document.createElement("p");
+      p.innerHTML = introText;
+      msg.appendChild(p);
+    }
 
-    const interval = setInterval(() => {
-      if (i < lines.length) {
-        const li = document.createElement("li");
-        li.textContent = lines[i].replace(/^(\d+\.\s+|[-*•]\s+)/, "").trim();
-        listElement.appendChild(li);
-        chat.scrollTop = chat.scrollHeight;
-        i++;
-      } else {
-        clearInterval(interval);
-      }
-    }, 200);
+    const ol = document.createElement("ol");
+    matches.forEach(match => {
+      const itemText = match[1].replace(/^\d+\.\s*/, "").trim();
+      const li = document.createElement("li");
+      li.innerHTML = itemText;
+      ol.appendChild(li);
+    });
+    msg.appendChild(ol);
   } else {
-    // Toon gewone tekst met typewriter-effect
+    // Geen inline genummerde lijst → toon tekst met stream effect
     let index = 0;
     const interval = setInterval(() => {
-      if (index < text.length) {
-        msg.textContent += text.charAt(index++);
+      if (index < formattedText.length) {
+        msg.innerHTML += formattedText.charAt(index++);
         chat.scrollTop = chat.scrollHeight;
       } else {
         clearInterval(interval);
