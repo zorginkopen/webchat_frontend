@@ -76,6 +76,7 @@ function streamMessage(cssClass, text) {
   msg.classList.add("message", cssClass);
   chat.appendChild(msg);
 
+  // Splits tekst in regels
   const lines = text.split("\n").filter(line => line.trim() !== "");
 
   const isNumberedList = lines.length > 1 && lines.every(line => /^\d+\.\s+/.test(line.trim()));
@@ -98,6 +99,7 @@ function streamMessage(cssClass, text) {
       }
     }, 200);
   } else {
+    // Toon gewone tekst met typewriter-effect
     let index = 0;
     const interval = setInterval(() => {
       if (index < text.length) {
