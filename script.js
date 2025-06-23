@@ -76,15 +76,41 @@ function streamMessage(cssClass, text) {
   msg.classList.add("message", cssClass);
   chat.appendChild(msg);
 
-  // Vervang **...** door <strong>...</strong>
-  const formattedText = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+  // **...** omzetten naar <strong>...</strong>
+  let formattedText = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
 
-  // Detecteer inline genummerde lijst: "1. ..., 2. ..., 3. ..."
+  // Inline bullets detecteren en splitsen
+  if (/(?:^|\s)[\-•*]\s/.test(formattedText)) {
+    // Probeer bulletlijst uit inline te extraheren
+    const parts = formattedText.split(/(?=[\-•*]\s)/g);
+    if (parts.length >= 2) {
+      const intro = parts[0].trim();
+      if (intro) {
+        const p = document.createElement("p");
+        p.innerHTML = intro;
+        msg.appendChild(p);
+      }
+
+      const ul = document.createElement("ul");
+      parts.slice(1).forEach(part => {
+        const clean = part.replace(/^[-•*]\s*/, "").trim();
+        if (clean) {
+          const li = document.createElement("li");
+          li.innerHTML = clean;
+          ul.appendChild(li);
+        }
+      });
+      msg.appendChild(ul);
+      chat.scrollTop = chat.scrollHeight;
+      return;
+    }
+  }
+
+  // Inline genummerde lijst detecteren
   const listPattern = /(?:^|\s)(\d+\.\s.*?)(?=\s\d+\.\s|$)/gs;
   const matches = [...formattedText.matchAll(listPattern)];
 
   if (matches.length >= 2) {
-    // Introductietekst vóór de eerste lijst
     const introText = formattedText.split(matches[0][0])[0].trim();
     if (introText) {
       const p = document.createElement("p");
@@ -101,7 +127,7 @@ function streamMessage(cssClass, text) {
     });
     msg.appendChild(ol);
   } else {
-    // Geen inline genummerde lijst → toon tekst met stream effect
+    // Geen lijst – gewoon streamen
     let index = 0;
     const interval = setInterval(() => {
       if (index < formattedText.length) {
