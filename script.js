@@ -4,7 +4,7 @@ const input = document.getElementById("user-input");
 
 let threadId = null;
 
-// Welkomstbericht bij laden
+// Openingsbericht bij het laden van de pagina
 window.onload = () => {
   const welkomstHTML = `
     Welkom bij <strong>Indicatiehulp.ai</strong>!<br>
@@ -76,33 +76,31 @@ function renderMessage(cssClass, text) {
   msg.classList.add("message", cssClass);
   chat.appendChild(msg);
 
-  let formattedText = text
-    .replace(/\[\d+:\d+†source\]/g, "")                                 // bronnen verwijderen
-    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")                  // **vetgedrukt**
-    .replace(
-      /(https?:\/\/[^\s<>]+)/g,
-      '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
-    ); // klikbare links
+  // Zet **vetgedrukte** en *cursieve* accenten om
+  let htmlText = text
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // vet
+    .replace(/(?<!\*)\*(?!\*)(.*?)\*(?!\*)/g, "<em>$1</em>"); // cursief
 
-  const lines = formattedText.split("\n").filter(line => line.trim() !== "");
+  const lines = htmlText.split("\n").filter(line => line.trim() !== "");
+
   const isNumberedList = lines.length > 1 && lines.every(line => /^\d+\.\s+/.test(line));
   const isBulletedList = lines.length > 1 && lines.every(line => /^[-*•]\s+/.test(line));
 
   if (isNumberedList || isBulletedList) {
-    const list = document.createElement(isNumberedList ? "ol" : "ul");
+    const listElement = document.createElement(isNumberedList ? "ol" : "ul");
+    msg.appendChild(listElement);
+
     lines.forEach(line => {
       const li = document.createElement("li");
-      li.innerHTML = line.replace(/^(\d+\.\s+|[-*•]\s+)/, "").trim();
-      list.appendChild(li);
+      const clean = line.replace(/^(\d+\.\s+|[-*•]\s+)/, "").trim();
+      li.innerHTML = clean;
+      listElement.appendChild(li);
     });
-    msg.appendChild(list);
   } else {
     const p = document.createElement("p");
-    p.innerHTML = formattedText.replace(/\n/g, "<br>");
+    p.innerHTML = htmlText.replace(/\n/g, "<br>");
     msg.appendChild(p);
   }
 
   chat.scrollTop = chat.scrollHeight;
 }
-
- 
