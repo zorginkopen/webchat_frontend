@@ -48,9 +48,9 @@ form.addEventListener("submit", async (e) => {
 
     const data = await response.json();
     threadId = data.thread_id;
-    streamMessage("agent-message", data.reply);
+    renderMessage("agent-message", data.reply);
   } catch (err) {
-    streamMessage("agent-message", "Er ging iets mis.");
+    renderMessage("agent-message", "Er ging iets mis.");
     console.error("Fout in fetch:", err);
   }
 });
@@ -71,74 +71,38 @@ function appendFormattedMessage(cssClass, htmlContent) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-function streamMessage(cssClass, text) {
+function renderMessage(cssClass, text) {
   const msg = document.createElement("div");
   msg.classList.add("message", cssClass);
   chat.appendChild(msg);
 
-  // Opschoning & HTML formatting
   let formattedText = text
-    .replace(/\[\d+:\d+†source\]/g, "") // bronverwijzingen weghalen
-    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // **vet**
+    .replace(/\[\d+:\d+†source\]/g, "")                                 // bronnen verwijderen
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")                  // **vetgedrukt**
     .replace(
       /(https?:\/\/[^\s<>]+)/g,
       '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
-    ); // Links klikbaar maken
+    ); // klikbare links
 
   const lines = formattedText.split("\n").filter(line => line.trim() !== "");
   const isNumberedList = lines.length > 1 && lines.every(line => /^\d+\.\s+/.test(line));
   const isBulletedList = lines.length > 1 && lines.every(line => /^[-*•]\s+/.test(line));
 
   if (isNumberedList || isBulletedList) {
-    const listElement = document.createElement(isNumberedList ? "ol" : "ul");
-    msg.appendChild(listElement);
-    let i = 0;
-    const interval = setInterval(() => {
-      if (i < lines.length) {
-        const li = document.createElement("li");
-        li.innerHTML = lines[i].replace(/^(\d+\.\s+|[-*•]\s+)/, "").trim();
-        listElement.appendChild(li);
-        chat.scrollTop = chat.scrollHeight;
-        i++;
-      } else {
-        clearInterval(interval);
-      }
-    }, 200);
-    return;
+    const list = document.createElement(isNumberedList ? "ol" : "ul");
+    lines.forEach(line => {
+      const li = document.createElement("li");
+      li.innerHTML = line.replace(/^(\d+\.\s+|[-*•]\s+)/, "").trim();
+      list.appendChild(li);
+    });
+    msg.appendChild(list);
+  } else {
+    const p = document.createElement("p");
+    p.innerHTML = formattedText.replace(/\n/g, "<br>");
+    msg.appendChild(p);
   }
 
-  // Inline bulletlijst detectie: "- <strong>item</strong>"
-  if (/\-\s+<strong>.*?<\/strong>/.test(formattedText)) {
-    const parts = formattedText.split(/-\s+(?=<strong>)/g);
-    if (parts.length > 2) {
-      const intro = parts[0].trim();
-      if (intro) {
-        const p = document.createElement("p");
-        p.innerHTML = intro;
-        msg.appendChild(p);
-      }
-
-      const ul = document.createElement("ul");
-      parts.slice(1).forEach(item => {
-        const li = document.createElement("li");
-        li.innerHTML = item.trim();
-        ul.appendChild(li);
-      });
-      msg.appendChild(ul);
-      chat.scrollTop = chat.scrollHeight;
-      return;
-    }
-  }
-
-  // Default: typ-animatie met inline HTML
-  let index = 0;
-  const interval = setInterval(() => {
-    if (index < formattedText.length) {
-      msg.innerHTML += formattedText.charAt(index++);
-      chat.scrollTop = chat.scrollHeight;
-    } else {
-      clearInterval(interval);
-    }
-  }, 15);
+  chat.scrollTop = chat.scrollHeight;
 }
 
+ 
