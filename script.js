@@ -4,9 +4,9 @@ const input = document.getElementById("user-input");
 
 let threadId = null;
 
-// ✅ Verwerkt alleen klikbare links voor bronnen met een openbare URL
+// ✅ Herkent bronnen zoals   of  
 function formatSources(text, sources) {
-  return text.replace(/【(\d+)†source】/g, (match, number) => {
+  return text.replace(/【(?:\d+:)?(\d+)†bron】/g, (match, number) => {
     const source = sources?.[number];
     if (source?.url) {
       return `<a href="${source.url}" target="_blank" class="bronlink">[bron ${number}]</a>`;
@@ -16,7 +16,7 @@ function formatSources(text, sources) {
   });
 }
 
-// Welkomstbericht
+// Welkomstbericht bij het laden
 window.onload = () => {
   const welkomstHTML = `
     Welkom bij <strong>Indicatiehulp.ai</strong>!<br>
@@ -37,6 +37,7 @@ window.onload = () => {
   appendFormattedMessage("agent-message", welkomstHTML);
 };
 
+// Form submission → GPT-call
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const message = input.value.trim();
@@ -67,6 +68,7 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
+// User messages
 function appendMessage(cssClass, text) {
   const msg = document.createElement("div");
   msg.classList.add("message", cssClass);
@@ -75,6 +77,7 @@ function appendMessage(cssClass, text) {
   chat.scrollTop = chat.scrollHeight;
 }
 
+// Format welcome message
 function appendFormattedMessage(cssClass, htmlContent) {
   const msg = document.createElement("div");
   msg.classList.add("message", cssClass);
@@ -83,6 +86,7 @@ function appendFormattedMessage(cssClass, htmlContent) {
   chat.scrollTop = chat.scrollHeight;
 }
 
+// Agent response message incl. bronverwerking
 function renderMessage(cssClass, data) {
   const msg = document.createElement("div");
   msg.classList.add("message", cssClass);
