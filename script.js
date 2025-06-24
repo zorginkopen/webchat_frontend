@@ -16,6 +16,13 @@ function formatSources(text, sources) {
   });
 }
 
+// ✅ Decode HTML entities
+function decodeHTML(html) {
+  const txt = document.createElement("textarea");
+  txt.innerHTML = html;
+  return txt.value;
+}
+
 // Welkomstbericht bij het laden
 window.onload = () => {
   const welkomstHTML = `
@@ -96,6 +103,7 @@ function renderMessage(cssClass, data) {
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/(?<!\*)\*(?!\*)(.*?)\*(?!\*)/g, "<em>$1</em>");
   htmlText = formatSources(htmlText, data.sources);
+  htmlText = decodeHTML(htmlText);
 
   const lines = htmlText.split("\n").filter(line => line.trim() !== "");
   const isNumberedList = lines.length > 1 && lines.every(line => /^\d+\.\s+/.test(line));
