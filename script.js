@@ -4,9 +4,9 @@ const input = document.getElementById("user-input");
 
 let threadId = null;
 
-// ✅ Herkent bronnen zoals   of  
+// ✅ Herkent jouw notatie:  
 function formatSources(text, sources) {
-  return text.replace(/【(?:\d+:)?(\d+)†bron】/g, (match, number) => {
+  return text.replace(/【(?:\d+:)?(\d+)†source】/g, (match, number) => {
     const source = sources?.[number];
     if (source?.url) {
       return `<a href="${source.url}" target="_blank" class="bronlink">[bron ${number}]</a>`;
