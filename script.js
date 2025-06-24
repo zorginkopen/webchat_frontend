@@ -6,14 +6,23 @@ let threadId = null;
 
 // ✅ Bronvermeldingen omzetten naar klikbare links
 function formatSources(text, sources) {
-  return text.replace(/【(?:\d+:)?(\d+)†source】/g, (match, number) => {
+  // Vervang 【...†source】 notatie
+  text = text.replace(/【(?:\d+:)?(\d+)†source】/g, (match, number) => {
     const source = sources?.[number];
-    if (source?.url) {
-      return `<a href="${source.url}" target="_blank" class="bronlink">[bron ${number}]</a>`;
-    } else {
-      return `[bron ${number}]`;
-    }
+    return source?.url
+      ? `<a href="${source.url}" target="_blank" class="bronlink">[bron ${number}]</a>`
+      : `[bron ${number}]`;
   });
+
+  // Vervang [4:0*bron] notatie
+  text = text.replace(/\[(?:\d+:)?(\d+)\*bron\]/g, (match, number) => {
+    const source = sources?.[number];
+    return source?.url
+      ? `<a href="${source.url}" target="_blank" class="bronlink">[bron ${number}]</a>`
+      : `[bron ${number}]`;
+  });
+
+  return text;
 }
 
 // ✅ Decode HTML entities
