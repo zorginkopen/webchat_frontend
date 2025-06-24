@@ -4,7 +4,7 @@ const input = document.getElementById("user-input");
 
 let threadId = null;
 
-// ✅ Herkent jouw notatie:  
+// ✅ Bronvermeldingen omzetten naar klikbare links
 function formatSources(text, sources) {
   return text.replace(/【(?:\d+:)?(\d+)†source】/g, (match, number) => {
     const source = sources?.[number];
@@ -77,7 +77,7 @@ function appendMessage(cssClass, text) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-// Format welcome message
+// Welkomstbericht of andere HTML-content
 function appendFormattedMessage(cssClass, htmlContent) {
   const msg = document.createElement("div");
   msg.classList.add("message", cssClass);
