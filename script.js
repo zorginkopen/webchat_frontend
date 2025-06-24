@@ -1,26 +1,18 @@
- const chat = document.getElementById("chat");
+const chat = document.getElementById("chat");
 const form = document.getElementById("input-form");
 const input = document.getElementById("user-input");
 
 let threadId = null;
 
-// ✅ Toegevoegd: bronnummer → URL mapping
-const sourceMap = {
-  4: "https://voorbeeld.nl/bron4.pdf",
-  6: "https://voorbeeld.nl/bron6.pdf",
-  11: "https://voorbeeld.nl/bron11.pdf",
-  14: "https://voorbeeld.nl/bron14.pdf",
-  16: "https://voorbeeld.nl/bron16.pdf",
-  17: "https://voorbeeld.nl/bron17.pdf"
-};
-
-// ✅ Toegevoegd: functie om 【X†source】 te vervangen door klikbare links
-function formatSources(text) {
+// ✅ Verwerkt alleen klikbare links voor bronnen met een openbare URL
+function formatSources(text, sources) {
   return text.replace(/【(\d+)†source】/g, (match, number) => {
-    const url = sourceMap[number];
-    return url
-      ? `<a href="${url}" target="_blank" class="bronlink">[bron ${number}]</a>`
-      : `[bron ${number}]`;
+    const source = sources?.[number];
+    if (source?.url) {
+      return `<a href="${source.url}" target="_blank" class="bronlink">[bron ${number}]</a>`;
+    } else {
+      return `[bron ${number}]`;
+    }
   });
 }
 
@@ -68,9 +60,9 @@ form.addEventListener("submit", async (e) => {
 
     const data = await response.json();
     threadId = data.thread_id;
-    renderMessage("agent-message", data.reply);
+    renderMessage("agent-message", data);
   } catch (err) {
-    renderMessage("agent-message", "Er ging iets mis.");
+    renderMessage("agent-message", { reply: "Er ging iets mis.", sources: {} });
     console.error("Fout in fetch:", err);
   }
 });
@@ -91,19 +83,17 @@ function appendFormattedMessage(cssClass, htmlContent) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-function renderMessage(cssClass, text) {
+function renderMessage(cssClass, data) {
   const msg = document.createElement("div");
   msg.classList.add("message", cssClass);
   chat.appendChild(msg);
 
-  // ✅ Verwerk vet, cursief én bronverwijzingen
-  let htmlText = text
+  let htmlText = data.reply
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/(?<!\*)\*(?!\*)(.*?)\*(?!\*)/g, "<em>$1</em>");
-  htmlText = formatSources(htmlText);
+  htmlText = formatSources(htmlText, data.sources);
 
   const lines = htmlText.split("\n").filter(line => line.trim() !== "");
-
   const isNumberedList = lines.length > 1 && lines.every(line => /^\d+\.\s+/.test(line));
   const isBulletedList = lines.length > 1 && lines.every(line => /^[-*•]\s+/.test(line));
 
