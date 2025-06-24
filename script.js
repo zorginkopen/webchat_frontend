@@ -4,35 +4,7 @@ const input = document.getElementById("user-input");
 
 let threadId = null;
 
-// ✅ Bronvermeldingen omzetten naar klikbare links
-function formatSources(text, sources) {
-  // Vervang 【...†source】 notatie
-  text = text.replace(/【(?:\d+:)?(\d+)†source】/g, (match, number) => {
-    const source = sources?.[number];
-    return source?.url
-      ? `<a href="${source.url}" target="_blank" class="bronlink">[bron ${number}]</a>`
-      : `[bron ${number}]`;
-  });
-
-  // Vervang [4:0*bron] notatie
-  text = text.replace(/\[(?:\d+:)?(\d+)\*bron\]/g, (match, number) => {
-    const source = sources?.[number];
-    return source?.url
-      ? `<a href="${source.url}" target="_blank" class="bronlink">[bron ${number}]</a>`
-      : `[bron ${number}]`;
-  });
-
-  return text;
-}
-
-// ✅ Decode HTML entities
-function decodeHTML(html) {
-  const txt = document.createElement("textarea");
-  txt.innerHTML = html;
-  return txt.value;
-}
-
-// Welkomstbericht bij het laden
+// Openingsbericht bij het laden van de pagina
 window.onload = () => {
   const welkomstHTML = `
     Welkom bij <strong>Indicatiehulp.ai</strong>!<br>
@@ -53,7 +25,6 @@ window.onload = () => {
   appendFormattedMessage("agent-message", welkomstHTML);
 };
 
-// Form submission → GPT-call
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const message = input.value.trim();
@@ -77,14 +48,13 @@ form.addEventListener("submit", async (e) => {
 
     const data = await response.json();
     threadId = data.thread_id;
-    renderMessage("agent-message", data);
+    renderMessage("agent-message", data.reply);
   } catch (err) {
-    renderMessage("agent-message", { reply: "Er ging iets mis.", sources: {} });
+    renderMessage("agent-message", "Er ging iets mis.");
     console.error("Fout in fetch:", err);
   }
 });
 
-// User messages
 function appendMessage(cssClass, text) {
   const msg = document.createElement("div");
   msg.classList.add("message", cssClass);
@@ -93,7 +63,6 @@ function appendMessage(cssClass, text) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-// Welkomstbericht of andere HTML-content
 function appendFormattedMessage(cssClass, htmlContent) {
   const msg = document.createElement("div");
   msg.classList.add("message", cssClass);
@@ -102,19 +71,18 @@ function appendFormattedMessage(cssClass, htmlContent) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-// Agent response message incl. bronverwerking
-function renderMessage(cssClass, data) {
+function renderMessage(cssClass, text) {
   const msg = document.createElement("div");
   msg.classList.add("message", cssClass);
   chat.appendChild(msg);
 
-  let htmlText = data.reply
-    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-    .replace(/(?<!\*)\*(?!\*)(.*?)\*(?!\*)/g, "<em>$1</em>");
-  htmlText = formatSources(htmlText, data.sources);
-  htmlText = decodeHTML(htmlText);
+  // Zet **vetgedrukte** en *cursieve* accenten om
+  let htmlText = text
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // vet
+    .replace(/(?<!\*)\*(?!\*)(.*?)\*(?!\*)/g, "<em>$1</em>"); // cursief
 
   const lines = htmlText.split("\n").filter(line => line.trim() !== "");
+
   const isNumberedList = lines.length > 1 && lines.every(line => /^\d+\.\s+/.test(line));
   const isBulletedList = lines.length > 1 && lines.every(line => /^[-*•]\s+/.test(line));
 
