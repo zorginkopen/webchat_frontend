@@ -1,17 +1,37 @@
-const chat = document.getElementById("chat");
+ const chat = document.getElementById("chat");
 const form = document.getElementById("input-form");
 const input = document.getElementById("user-input");
 
 let threadId = null;
 
-// Openingsbericht bij het laden van de pagina
+// ✅ Toegevoegd: bronnummer → URL mapping
+const sourceMap = {
+  4: "https://voorbeeld.nl/bron4.pdf",
+  6: "https://voorbeeld.nl/bron6.pdf",
+  11: "https://voorbeeld.nl/bron11.pdf",
+  14: "https://voorbeeld.nl/bron14.pdf",
+  16: "https://voorbeeld.nl/bron16.pdf",
+  17: "https://voorbeeld.nl/bron17.pdf"
+};
+
+// ✅ Toegevoegd: functie om 【X†source】 te vervangen door klikbare links
+function formatSources(text) {
+  return text.replace(/【(\d+)†source】/g, (match, number) => {
+    const url = sourceMap[number];
+    return url
+      ? `<a href="${url}" target="_blank" class="bronlink">[bron ${number}]</a>`
+      : `[bron ${number}]`;
+  });
+}
+
+// Welkomstbericht
 window.onload = () => {
   const welkomstHTML = `
     Welkom bij <strong>Indicatiehulp.ai</strong>!<br>
     Ik ben Indi, jouw digitale adviseur voor:<br>
     het stellen van de juiste indicatie en het opstellen van een conceptadvies voor de (Evean) zorgexpert.<br><br>
 
-    <strong>Het volgende is bijv. mogelijk:</strong><br>
+    <strong>Het volgende is bijvoorbeeld mogelijk:</strong><br>
     - In kaart brengen cliëntsituatie<br>
     - Indicatiestelling extramuraal (zorg thuis)<br>
     - Indicatiestelling intramuraal (verpleeghuis)<br><br>
@@ -76,10 +96,11 @@ function renderMessage(cssClass, text) {
   msg.classList.add("message", cssClass);
   chat.appendChild(msg);
 
-  // Zet **vetgedrukte** en *cursieve* accenten om
+  // ✅ Verwerk vet, cursief én bronverwijzingen
   let htmlText = text
-    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // vet
-    .replace(/(?<!\*)\*(?!\*)(.*?)\*(?!\*)/g, "<em>$1</em>"); // cursief
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/(?<!\*)\*(?!\*)(.*?)\*(?!\*)/g, "<em>$1</em>");
+  htmlText = formatSources(htmlText);
 
   const lines = htmlText.split("\n").filter(line => line.trim() !== "");
 
