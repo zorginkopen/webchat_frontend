@@ -8,19 +8,20 @@ let threadId = null;
 window.onload = () => {
   const welkomstHTML = `
     Welkom bij <strong>Indicatiehulp.ai</strong>!<br>
-    Ik ben Indi, jouw digitale adviseur voor:<br>
-    het stellen van de juiste indicatie en het opstellen van een conceptadvies voor de (Evean) zorgexpert.<br><br>
-
+    Ik ben Indi, jouw digitale assistent om om de cliëntsituatie gestructureerd in kaart te brengen, 
+    de juiste redeneerstappen te volgen en scenario's te verkennen voor zorg en ondersteuning.<br><br>
+   
     <strong>Het volgende is bijvoorbeeld mogelijk:</strong><br>
-    - In kaart brengen cliëntsituatie<br>
-    - Indicatiestelling extramuraal (zorg thuis)<br>
-    - Indicatiestelling intramuraal (verpleeghuis)<br><br>
+    - In kaart brengen cliëntsituatie (Omaha-structuur)<br>
+    - Verhelderen van zelfredzaamheid en mantelzorg<br>
+    - Verkennen van mogelijke zorgroutes (bijv. Zvw, Wmo, WLZ, VPT)<br>
+    - Signaleren van onzekerheden en noodzakelijke vervolgstappen<br>
+    - Ondersteunen bij triage (o.a. revalidatie / GRZ)<br><br>
 
-    Wil je direct een indicatieadvies laten opstellen? Dan heb ik meer informatie nodig over de cliënt.<br>
-    Geef bij voorkeur ook je naam en een e-mailadres of telefoonnummer,<br>
-    zodat we het conceptadvies voor beoordeling kunnen indienen.<br><br>
-
-    <em>Start met het adviesgesprek</em>
+    Wil je starten? Dan breng ik eerst samen met jou de cliëntsituatie zorgvuldig in beeld.<br>
+    Je kunt een fictieve naam voor de cliënt gebruiken.<br><br>
+    
+    <em>Start met het gesprek</em>
   `;
   appendFormattedMessage("agent-message", welkomstHTML);
 };
